@@ -1,6 +1,8 @@
 name: Java CI with Maven
 
 on:
+  push:
+    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
@@ -19,11 +21,12 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Make Maven Wrapper executable
-        run: chmod +x mvnw
-
       - name: Run tests with Maven Wrapper
-        run: ./mvnw -B test
+        run:
+          ./mvnw spotless:check
+#          ./mvnw checkstyle:check
+          ./mvnw -B test
+
 
       - name: Build Package
         run: ./mvnw -B package -DskipTests

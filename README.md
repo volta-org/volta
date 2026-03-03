@@ -34,8 +34,9 @@ java -jar target/volta-1.0-SNAPSHOT.jar
 1. Pull latest changes: `git pull origin main`
 2. Create a feature branch: `git checkout -b surname/feature-name`
 3. Write code and tests
-4. Verify locally: `./mvnw test`
-5. Commit: `git commit -m "Add feature description"` (in English)
-6. Push: `git push origin surname/feature-name`
-7. Open a Pull Request on GitHub
-8. Wait for CI checks to pass and code review approval
+4. Auto-format code: `./mvnw spotless:apply`
+5. Verify locally: `./mvnw test`
+6. Commit: `git commit -m "Add feature description"` (in English)
+7. Push: `git push origin surname/feature-name`
+8. Open a Pull Request on GitHub
+9. Wait for CI checks to pass and code review approval

@@ -1,30 +1,35 @@
 package com.volta;
 
-import org.junit.jupiter.api.Test;
-import java.net.http.HttpResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
+import java.net.http.HttpResponse;
+import org.junit.jupiter.api.Test;
+
+@WireMockTest(httpPort = 8089)
 class HttpSenderTest {
 
-    private static final String TEST_URL = "https://jsonplaceholder.typicode.com/posts/1";
-    private static final String INVALID_URL = "https://thisdomaindoesnotexist12345.com";
+  private final HttpSender sender = new HttpSender();
 
-    private final HttpSender sender = new HttpSender();
+  @Test
+  void sendReturns200ForValidUrl() throws Exception {
+    stubFor(get("/test").willReturn(ok("Hello from mock!")));
 
-    @Test
-    void sendReturns200ForValidUrl() throws Exception {
-        HttpResponse<String> response = sender.send(TEST_URL);
-        assertEquals(200, response.statusCode());
-    }
+    HttpResponse<String> response = sender.send("http://localhost:8089/test");
+    assertEquals(200, response.statusCode());
+  }
 
-    @Test
-    void responseBodyIsNotEmpty() throws Exception {
-        HttpResponse<String> response = sender.send(TEST_URL);
-        assertFalse(response.body().isEmpty());
-    }
+  @Test
+  void responseBodyIsNotEmpty() throws Exception {
+    stubFor(get("/test").willReturn(ok("Hello from mock!")));
 
-    @Test
-    void sendThrowsOnInvalidUrl() {
-        assertThrows(Exception.class, () -> sender.send(INVALID_URL));
-    }
+    HttpResponse<String> response = sender.send("http://localhost:8089/test");
+    assertFalse(response.body().isEmpty());
+  }
+
+  @Test
+  void sendThrowsOnInvalidUrl() {
+    assertThrows(Exception.class, () -> sender.send("https://thisdomaindoesnotexist12345.com"));
+  }
 }
