@@ -22,7 +22,7 @@ jobs:
           cache: 'maven'
 
       - name: Run tests with Maven Wrapper
-        run:
+        run: |
           ./mvnw spotless:check
 #          ./mvnw checkstyle:check
           ./mvnw -B test
