@@ -24,9 +24,7 @@ jobs:
       - name: Run tests with Maven Wrapper
         run: |
           ./mvnw spotless:check
-#          ./mvnw checkstyle:check
           ./mvnw -B test
-
 
       - name: Build Package
         run: ./mvnw -B package -DskipTests
