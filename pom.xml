@@ -15,15 +15,14 @@
 
         <!-- Dependency versions -->
         <junit.version>5.9.1</junit.version>
-        <wiremock.version>3.3.1</wiremock.version>
-        <logback.version>1.5.19</logback.version>
+        <wiremock.version>3.13.1</wiremock.version>
+        <logback.version>1.5.32</logback.version>
 
         <!-- Plugin versions -->
         <surefire.version>3.2.5</surefire.version>
         <jar-plugin.version>3.3.0</jar-plugin.version>
         <shade-plugin.version>3.5.1</shade-plugin.version>
         <spotless.version>2.43.0</spotless.version>
-<!--        <checkstyle.version>3.4.0</checkstyle.version>-->
     </properties>
 
     <dependencies>
@@ -37,6 +36,7 @@
             <groupId>org.wiremock</groupId>
             <artifactId>wiremock</artifactId>
             <version>${wiremock.version}</version>
+            <scope>test</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -96,16 +96,6 @@
                     </java>
                 </configuration>
             </plugin>
-<!--            <plugin>-->
-<!--                <groupId>org.apache.maven.plugins</groupId>-->
-<!--                <artifactId>maven-checkstyle-plugin</artifactId>-->
-<!--                <version>${checkstyle.version}</version>-->
-<!--                <configuration>-->
-<!--                    <configLocation>google_checks.xml</configLocation>-->
-<!--                    <violationSeverity>warning</violationSeverity>-->
-<!--                    <failOnViolation>true</failOnViolation>-->
-<!--                </configuration>-->
-<!--            </plugin>-->
         </plugins>
     </build>
 

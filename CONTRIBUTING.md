@@ -57,7 +57,7 @@ Use prefixes:
 
 **Title:** Short and clear
 ```
-Implement basic Load Engine with RPS throttling`
+Implement basic Load Engine with RPS throttling
 ```
 
 **Body:**
@@ -69,12 +69,6 @@ Brief explanation of what needs to be done.
 - [ ] Task 1
 - [ ] Task 2
 - [ ] Task 3
-
-## Definition of Done
-- [ ] Logic covers edge cases: zero or negative RPS, invalid URL
-- [ ] No resource leaks
-- [ ] Logging instead of `System.out.println`
-- [ ] Code formatted (./mvnw spotless:check passes)
 ```
 
 If the issue depends on another, add `Depends on #<number>` in the description.

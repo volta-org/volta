@@ -6,15 +6,15 @@
     </appender>
 
     <!-- For WireMock and Jetty -->
-    <logger name="org.eclipse.jetty" level="INFO" />
-    <logger name="wiremock" level="INFO" />
-    <logger name="org.wiremock" level="INFO" />
+    <logger name="org.eclipse.jetty" level="INFO"/>
+    <logger name="wiremock" level="INFO"/>
+    <logger name="org.wiremock" level="INFO"/>
 
     <!-- Our code — show everything -->
-    <logger name="com.volta" level="DEBUG" />
+    <logger name="com.volta" level="DEBUG"/>
 
     <!-- Default — only INFO and higher -->
     <root level="INFO">
-        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="CONSOLE"/>
     </root>
 </configuration>

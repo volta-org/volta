@@ -30,6 +30,6 @@ class HttpSenderTest {
 
   @Test
   void sendThrowsOnInvalidUrl() {
-    assertThrows(Exception.class, () -> sender.send("https://thisdomaindoesnotexist12345.com"));
+    assertThrows(Exception.class, () -> sender.send("http://localhost:1"));
   }
 }
