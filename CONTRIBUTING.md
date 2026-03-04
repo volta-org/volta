@@ -22,7 +22,7 @@ Use `./mvnw` instead of `mvn` (ensures same Maven version for everyone)
     ```
 5. Create a feature branch:
    ```bash
-    git checkout -b surname/feature-name
+    git checkout -b feature-name
     ```
 6. Write code and tests
 7. Format code: 
@@ -38,7 +38,7 @@ Use `./mvnw` instead of `mvn` (ensures same Maven version for everyone)
    git commit -m "add stats collector"
 10. Push your branch:
     ```bash
-    git push origin surname/feature-name
+    git push origin feature-name
     ```
 11. Open a Pull Request (see the [Opening a Pull Request](#opening-a-pull-request) section)
 12. Wait for CI checks to pass and code review approval
