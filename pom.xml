@@ -22,7 +22,7 @@
         <surefire.version>3.2.5</surefire.version>
         <jar-plugin.version>3.3.0</jar-plugin.version>
         <shade-plugin.version>3.5.1</shade-plugin.version>
-        <spotless.version>2.43.0</spotless.version>
+        <spotless.version>3.3.0</spotless.version>
     </properties>
 
     <dependencies>
