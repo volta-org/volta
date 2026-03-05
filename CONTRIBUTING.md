@@ -20,9 +20,9 @@ Use `./mvnw` instead of `mvn` (ensures same Maven version for everyone)
    ```bash
     git pull origin main
     ```
-5. Create a feature branch:
+5. Create a branch ([Conventional Naming Style](#conventional-naming-style) recommended, but not strict):
    ```bash
-    git checkout -b feature-name
+    git checkout -b feature/stats-collector
     ```
 6. Write code and tests
 7. Format code: 
@@ -33,9 +33,10 @@ Use `./mvnw` instead of `mvn` (ensures same Maven version for everyone)
     ```bash
    ./mvnw test
     ```
-9. Commit with a clear message in English ([Commit Message Style](#commit-message-style) recommended, but not strict):
+9. Commit with a clear message in English ([Conventional Naming Style](#conventional-naming-style) recommended, but not strict):
    ```bash
-   git commit -m "add stats collector"
+   git commit -m "feature: add stats collector"
+   ```
 10. Push your branch:
     ```bash
     git push origin feature-name
@@ -43,15 +44,15 @@ Use `./mvnw` instead of `mvn` (ensures same Maven version for everyone)
 11. Open a Pull Request (see the [Opening a Pull Request](#opening-a-pull-request) section)
 12. Wait for CI checks to pass and code review approval
 
-## Commit Message Style
+## Conventional Naming Style
 
 Use prefixes:
-- `feat:` — new feature
-- `fix:` — bug fix
-- `refactor:` — code restructuring
-- `test:` — adding/updating tests
-- `chore:` — CI, configs, dependencies
-- `docs:` — documentation
+- `feature` — new feature
+- `fix` — bug fix
+- `refactor` — code restructuring
+- `test` — adding/updating tests
+- `chore` — CI, configs, dependencies
+- `docs` — documentation
 
 ## Creating an Issue
 
@@ -91,12 +92,12 @@ If the issue depends on another, add `Depends on #<number>` in the description.
 
 ## Opening a Pull Request
 
-**Title:** Same style as commits (see the [Commit Message Style](#commit-message-style) section)
+**Title:** Same style as commits (see the[Conventional Naming Style](#conventional-naming-style) section)
 > **Note:** All PRs are merged using **Squash and Merge**.
 > This keeps the main branch history clean — one commit per feature/fix.
 > Write a clear PR title, as it becomes the commit message in main.
 ```
-feat: add stats collector
+feature: add stats collector
 ```
 
 **Description:**
