@@ -15,7 +15,7 @@
 
         <!-- Dependency versions -->
         <junit.version>5.9.1</junit.version>
-        <wiremock.version>3.13.1</wiremock.version>
+        <wiremock.version>3.13.2</wiremock.version>
         <logback.version>1.5.32</logback.version>
 
         <!-- Plugin versions -->
