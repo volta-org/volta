@@ -14,6 +14,7 @@ class LoadEngineTest {
 
   private WireMockServer wireMock;
   private String baseUrl;
+  private HttpSender sender;
 
   @BeforeEach
   void setUp() {
@@ -29,7 +30,10 @@ class LoadEngineTest {
   }
 
   @AfterEach
-  void tearDown() {
+  void tearDown() throws Exception {
+    if (sender != null) {
+      sender.close();
+    }
     wireMock.stop();
   }
 
