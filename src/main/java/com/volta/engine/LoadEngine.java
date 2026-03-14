@@ -4,6 +4,7 @@ import com.volta.http.HttpSender;
 import java.net.http.HttpResponse;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,20 +15,21 @@ public class LoadEngine {
   private final int targetRps;
   private final int durationSeconds;
   private volatile boolean running = false;
+  private static final int MAX_CONCURRENT_REQUESTS = 1000;
 
-  public LoadEngine(String URL, int targetRPS, int durationSeconds) {
-    if (URL == null || URL.isBlank()) {
+  public LoadEngine(String url, int targetRps, int durationSeconds) {
+    if (url == null || url.isBlank()) {
       throw new IllegalArgumentException("URL must not be empty");
     }
-    if (targetRPS <= 0) {
+    if (targetRps <= 0) {
       throw new IllegalArgumentException("RPS must be positive");
     }
     if (durationSeconds <= 0) {
       throw new IllegalArgumentException("Duration must be positive");
     }
 
-    this.url = URL;
-    this.targetRps = targetRPS;
+    this.url = url;
+    this.targetRps = targetRps;
     this.durationSeconds = durationSeconds;
   }
 
@@ -36,6 +38,8 @@ public class LoadEngine {
     long intervalNanos = 1_000_000_000L / targetRps;
     long endTime = System.nanoTime() + (long) durationSeconds * 1_000_000_000L;
     long sendNextTime = System.nanoTime();
+
+    Semaphore semaphore = new Semaphore(MAX_CONCURRENT_REQUESTS);
 
     try (HttpSender sender = new HttpSender();
         ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
@@ -53,6 +57,13 @@ public class LoadEngine {
           }
         }
 
+        try {
+          semaphore.acquire();
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          break;
+        }
+
         executor.submit(
             () -> {
               try {
@@ -60,8 +71,14 @@ public class LoadEngine {
                 log.info("Status: {}, Body: {}", response.statusCode(), response.body());
               } catch (Exception e) {
                 log.error("Request failed", e);
+              } finally {
+                semaphore.release();
               }
             });
+
+        if (System.nanoTime() - sendNextTime > 1_000_000_000L) {
+          sendNextTime = System.nanoTime();
+        }
 
         sendNextTime += intervalNanos;
       }
@@ -69,6 +86,7 @@ public class LoadEngine {
       log.error("Sender closed or failed to initialize", e);
     }
 
+    // try-with-resources handles executor.close() and sender.close()
     running = false;
     log.info("Test finished");
   }
