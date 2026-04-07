@@ -100,7 +100,7 @@ class StatsCollectorTest {
       assertEquals(0, snapshot.totalRequests());
       assertEquals(0, snapshot.successCount());
       assertEquals(0, snapshot.errorCount());
-      assertEquals(0, snapshot.avgLatencyMs());
+      assertEquals(0, snapshot.avgLatencyMs(), 0.01);
       assertEquals(0, snapshot.minLatencyMs());
       assertEquals(0, snapshot.maxLatencyMs());
     }
@@ -117,7 +117,7 @@ class StatsCollectorTest {
       assertEquals(1, snapshot.totalRequests());
       assertEquals(1, snapshot.successCount());
       assertEquals(0, snapshot.errorCount());
-      assertEquals(50, snapshot.avgLatencyMs());
+      assertEquals(50, snapshot.avgLatencyMs(), 0.01);
       assertEquals(50, snapshot.minLatencyMs());
       assertEquals(50, snapshot.maxLatencyMs());
     }
@@ -131,7 +131,7 @@ class StatsCollectorTest {
       assertEquals(0, snapshot.successCount());
       assertEquals(1, snapshot.errorCount());
       assertEquals(100, snapshot.minLatencyMs());
-      assertEquals(100, snapshot.avgLatencyMs());
+      assertEquals(100, snapshot.avgLatencyMs(), 0.01);
       assertEquals(100, snapshot.maxLatencyMs());
     }
 
@@ -147,7 +147,7 @@ class StatsCollectorTest {
       assertEquals(2, snapshot.successCount());
       assertEquals(2, snapshot.errorCount());
       assertEquals(10, snapshot.minLatencyMs());
-      assertEquals(25, snapshot.avgLatencyMs());
+      assertEquals(25, snapshot.avgLatencyMs(), 0.01);
       assertEquals(40, snapshot.maxLatencyMs());
     }
 
@@ -158,7 +158,7 @@ class StatsCollectorTest {
       collector.record(200, 30);
 
       StatsSnapshot snapshot = collector.getSnapshot();
-      assertEquals(20, snapshot.avgLatencyMs());
+      assertEquals(20, snapshot.avgLatencyMs(), 0.01);
     }
 
     @Test
@@ -197,7 +197,7 @@ class StatsCollectorTest {
       assertEquals(1, snapshot.totalRequests());
       assertEquals(1, snapshot.successCount());
       assertEquals(0, snapshot.errorCount());
-      assertEquals(50, snapshot.avgLatencyMs());
+      assertEquals(50, snapshot.avgLatencyMs(), 0.01);
       assertEquals(50, snapshot.minLatencyMs());
       assertEquals(50, snapshot.maxLatencyMs());
     }
@@ -233,17 +233,15 @@ class StatsCollectorTest {
           expectedMax = Math.max(expectedMax, latencyMs);
         }
 
-        StatsSnapshot snapshot = collector.getSnapshot();
-        long expectedAvg = expectedTotalLatency / expectedTotal;
+        StatsSnapshot snapshot = collector.getSnapshotAndReset();
+        double expectedAvg = (double) expectedTotalLatency / expectedTotal;
 
         assertEquals(expectedTotal, snapshot.totalRequests(), "cycle " + cycle + ": totalRequests");
         assertEquals(expectedSuccess, snapshot.successCount(), "cycle " + cycle + ": successCount");
         assertEquals(expectedErrors, snapshot.errorCount(), "cycle " + cycle + ": errorCount");
-        assertEquals(expectedAvg, snapshot.avgLatencyMs(), "cycle " + cycle + ": avgLatency");
+        assertEquals(expectedAvg, snapshot.avgLatencyMs(), 0.01, "cycle " + cycle + ": avgLatency");
         assertEquals(expectedMin, snapshot.minLatencyMs(), "cycle " + cycle + ": minLatency");
         assertEquals(expectedMax, snapshot.maxLatencyMs(), "cycle " + cycle + ": maxLatency");
-
-        collector.reset();
       }
     }
 
@@ -257,7 +255,7 @@ class StatsCollectorTest {
       assertEquals(0, snapshot.totalRequests());
       assertEquals(0, snapshot.successCount());
       assertEquals(0, snapshot.errorCount());
-      assertEquals(0, snapshot.avgLatencyMs());
+      assertEquals(0, snapshot.avgLatencyMs(), 0.01);
       assertEquals(0, snapshot.minLatencyMs());
       assertEquals(0, snapshot.maxLatencyMs());
     }
@@ -273,7 +271,7 @@ class StatsCollectorTest {
       assertEquals(2, before.totalRequests());
       assertEquals(1, before.successCount());
       assertEquals(1, before.errorCount());
-      assertEquals(150, before.avgLatencyMs());
+      assertEquals(150, before.avgLatencyMs(), 0.01);
       assertEquals(100, before.minLatencyMs());
       assertEquals(200, before.maxLatencyMs());
     }
@@ -343,7 +341,7 @@ class StatsCollectorTest {
           expectedMax = Math.max(expectedMax, latencies[i]);
         }
 
-        long expectedAvg = expectedTotalLatency / totalRecords;
+        double expectedAvg = (double) expectedTotalLatency / totalRecords;
 
         try (ExecutorService executor = Executors.newFixedThreadPool(threadCount)) {
           CountDownLatch latch = new CountDownLatch(threadCount);
@@ -366,15 +364,13 @@ class StatsCollectorTest {
           latch.await();
         }
 
-        StatsSnapshot snapshot = collector.getSnapshot();
+        StatsSnapshot snapshot = collector.getSnapshotAndReset();
         assertEquals(totalRecords, snapshot.totalRequests(), "cycle " + cycle + ": total");
         assertEquals(expectedSuccess, snapshot.successCount(), "cycle " + cycle + ": success");
         assertEquals(expectedErrors, snapshot.errorCount(), "cycle " + cycle + ": errors");
-        assertEquals(expectedAvg, snapshot.avgLatencyMs(), "cycle " + cycle + ": avg");
+        assertEquals(expectedAvg, snapshot.avgLatencyMs(), 0.01, "cycle " + cycle + ": avg");
         assertEquals(expectedMin, snapshot.minLatencyMs(), "cycle " + cycle + ": min");
         assertEquals(expectedMax, snapshot.maxLatencyMs(), "cycle " + cycle + ": max");
-
-        collector.reset();
       }
     }
   }

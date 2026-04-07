@@ -10,7 +10,7 @@ public class StatsCollector {
   private final LongAccumulator maxLatencyMs = new LongAccumulator(Math::max, Long.MIN_VALUE);
   private final LongAccumulator minLatencyMs = new LongAccumulator(Math::min, Long.MAX_VALUE);
 
-  public void record(int statusCode, long latencyMs) throws IllegalArgumentException {
+  public void record(int statusCode, long latencyMs) {
     if (statusCode < 100 || statusCode > 599) {
       throw new IllegalArgumentException("statusCode must be integer in [100, 599]");
     }
@@ -34,16 +34,30 @@ public class StatsCollector {
 
     long snapshotMinLatencyMs = (snapshotTotalRequests == 0 ? 0 : minLatencyMs.get());
     long snapshotMaxLatencyMs = (snapshotTotalRequests == 0 ? 0 : maxLatencyMs.get());
-    long snapshotAvgLatencyMs =
-        (snapshotTotalRequests == 0 ? 0 : snapshotTotalLatencyMs / snapshotTotalRequests);
+    double snapshotAvgLatencyMs =
+        (snapshotTotalRequests == 0
+            ? 0.0
+            : (double) snapshotTotalLatencyMs / snapshotTotalRequests);
 
     return new StatsSnapshot(
         snapshotTotalRequests,
         snapshotSuccessCount,
-        snapshotTotalRequests - snapshotSuccessCount,
+        Math.max(snapshotTotalRequests - snapshotSuccessCount, 0),
         snapshotAvgLatencyMs,
         snapshotMinLatencyMs,
         snapshotMaxLatencyMs);
+  }
+
+  /**
+   * Returns a snapshot of current stats and resets all counters.
+   *
+   * <p>Must be called only after all recording threads have finished. Not safe to call concurrently
+   * with {@link #record}.
+   */
+  public StatsSnapshot getSnapshotAndReset() {
+    StatsSnapshot snapshot = getSnapshot();
+    reset();
+    return snapshot;
   }
 
   public void reset() {

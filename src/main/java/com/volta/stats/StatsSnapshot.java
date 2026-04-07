@@ -4,6 +4,6 @@ public record StatsSnapshot(
     long totalRequests,
     long successCount,
     long errorCount,
-    long avgLatencyMs,
+    double avgLatencyMs,
     long minLatencyMs,
     long maxLatencyMs) {}
