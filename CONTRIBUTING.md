@@ -25,24 +25,22 @@ Use `./mvnw` instead of `mvn` (ensures same Maven version for everyone)
     git checkout -b feature/stats-collector
     ```
 6. Write code and tests
-7. Format code: 
+7. Format and verify locally (see the [Suppressing Checkstyle Warnings](#suppressing-checkstyle-warnings) section): 
     ```bash
-   ./mvnw spotless:apply
+    ./mvnw spotless:apply
+    ./mvnw checkstyle:check
+    ./mvnw test
     ```
-8. Verify locally:
-    ```bash
-   ./mvnw test
-    ```
-9. Commit with a clear message in English ([Conventional Naming Style](#conventional-naming-style) recommended, but not strict):
+8. Commit with a clear message in English ([Conventional Naming Style](#conventional-naming-style) recommended, but not strict):
    ```bash
    git commit -m "feature: add stats collector"
    ```
-10. Push your branch:
-    ```bash
-    git push origin feature-name
-    ```
-11. Open a Pull Request (see the [Opening a Pull Request](#opening-a-pull-request) section)
-12. Wait for CI checks to pass and code review approval
+9. Push your branch:
+   ```bash
+   git push origin feature/stats-collector
+   ```
+10. Open a Pull Request (see the [Opening a Pull Request](#opening-a-pull-request) section)
+11. Wait for CI checks to pass and code review approval
 
 ## Conventional Naming Style
 
@@ -76,19 +74,19 @@ If the issue depends on another, add `Depends on #<number>` in the description.
 
 **Labels** — add one component label and one type label:
 
-| Component | Use for |
-|-----------|---------|
-| `engine` | Load generation logic |
-| `stats` | Metrics collection |
-| `cli` | Command-line interface |
+| Component | Use for                 |
+|-----------|-------------------------|
+| `engine`  | Load generation logic   |
+| `stats`   | Metrics collection      |
+| `cli`     | Command-line interface  |
 | `cluster` | Master-Agent networking |
-| `infra` | CI, build, configs |
+| `infra`   | CI, build, configs      |
 
-| Type | Use for |
-|------|---------|
-| `feature` | New functionality |
-| `bug` | Bug fix |
-| `refactor` | Code improvement |
+| Type       | Use for           |
+|------------|-------------------|
+| `feature`  | New functionality |
+| `bug`      | Bug fix           |
+| `refactor` | Code improvement  |
 
 ## Opening a Pull Request
 
@@ -112,3 +110,40 @@ Closes #<issue-number>
 ```
 
 `Closes #<number>` automatically closes the linked issue when the PR is merged.
+
+## Suppressing Checkstyle Warnings
+
+In rare cases you may need to suppress a Checkstyle rule. Use `@SuppressWarnings("checkstyle:RuleName")` where `RuleName` is the exact module name from `checkstyle.xml`.
+
+**Suppress a single rule on one declaration:**
+
+You see:
+```
+[ERROR] .../Main.java:[15,9] (naming) LocalVariableName: Name 'MyVar' must match pattern '^[a-z][a-zA-Z0-9]*$'.
+```
+
+You write:
+```java
+@SuppressWarnings("checkstyle:LocalVariableName")
+int MyVar = 123;
+```
+
+**Suppress multiple rules:**
+
+You see:
+```
+[ERROR] .../AgentClient.java:[34,33] (naming) ParameterName: Name 'target_url' must match pattern '^[a-z][a-zA-Z0-9]*$'.
+[ERROR] .../AgentClient.java:[36,16] (naming) LocalVariableName: Name 'response_code' must match pattern '^[a-z][a-zA-Z0-9]*$'.
+```
+
+You write:
+```java
+@SuppressWarnings({"checkstyle:ParameterName", "checkstyle:LocalVariableName"})
+public void connect(String target_url) {
+    int response_code = 123;
+}
+```
+
+> **Note:** The annotation suppresses all violations of the listed rules
+> within the annotated element (field, method, or class). Keep suppressions
+> as narrow as possible - prefer annotating a field over a whole class.

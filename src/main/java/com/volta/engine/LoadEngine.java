@@ -13,8 +13,8 @@ public class LoadEngine {
   private final int durationSeconds;
   private volatile boolean running = false;
 
-  public LoadEngine(String URL, int targetRPS, int durationSeconds) {
-    if (URL == null || URL.isBlank()) {
+  public LoadEngine(String url, int targetRPS, int durationSeconds) {
+    if (url == null || url.isBlank()) {
       throw new IllegalArgumentException("URL must not be empty");
     }
     if (targetRPS <= 0) {
@@ -24,7 +24,7 @@ public class LoadEngine {
       throw new IllegalArgumentException("Duration must be positive");
     }
 
-    this.url = URL;
+    this.url = url;
     this.targetRps = targetRPS;
     this.durationSeconds = durationSeconds;
   }
