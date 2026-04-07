@@ -92,13 +92,47 @@ class LoadEngineTest {
     wireMock.stubFor(get("/error").willReturn(serverError()));
     LoadEngine engine = new LoadEngine(baseUrl + "/error", 10, 2);
 
-    assertDoesNotThrow(() -> engine.start());
+    assertDoesNotThrow(engine::start);
   }
 
   @Test
   void shouldHandleInvalidUrl() {
     LoadEngine engine = new LoadEngine("http://invalid-host-that-does-not-exist:9999/test", 5, 2);
 
-    assertDoesNotThrow(() -> engine.start());
+    assertDoesNotThrow(engine::start);
+  }
+
+  @Test
+  void shouldRejectNullUrl() {
+    assertThrows(IllegalArgumentException.class, () -> new LoadEngine(null, 10, 5));
+  }
+
+  @Test
+  void shouldRejectEmptyUrl() {
+    assertThrows(IllegalArgumentException.class, () -> new LoadEngine("", 10, 5));
+  }
+
+  @Test
+  void shouldRejectZeroRps() {
+    assertThrows(
+        IllegalArgumentException.class, () -> new LoadEngine("http://localhost/test", 0, 5));
+  }
+
+  @Test
+  void shouldRejectNegativeRps() {
+    assertThrows(
+        IllegalArgumentException.class, () -> new LoadEngine("http://localhost/test", -1, 5));
+  }
+
+  @Test
+  void shouldRejectZeroDuration() {
+    assertThrows(
+        IllegalArgumentException.class, () -> new LoadEngine("http://localhost/test", 10, 0));
+  }
+
+  @Test
+  void shouldRejectNegativeDuration() {
+    assertThrows(
+        IllegalArgumentException.class, () -> new LoadEngine("http://localhost/test", 10, -1));
   }
 }
