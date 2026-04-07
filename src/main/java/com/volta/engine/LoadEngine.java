@@ -17,7 +17,6 @@ public class LoadEngine {
   private volatile boolean running = false;
   private static final int MAX_CONCURRENT_REQUESTS = 1000;
 
-
   public LoadEngine(String url, int targetRps, int durationSeconds) {
     if (url == null || url.isBlank()) {
       throw new IllegalArgumentException("URL must not be empty");
