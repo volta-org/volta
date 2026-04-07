@@ -23,6 +23,7 @@
         <jar-plugin.version>3.5.0</jar-plugin.version>
         <shade-plugin.version>3.6.2</shade-plugin.version>
         <spotless.version>3.3.0</spotless.version>
+        <checkstyle.version>3.6.0</checkstyle.version>
     </properties>
 
     <dependencies>
@@ -96,7 +97,16 @@
                     </java>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>${checkstyle.version}</version>
+                <configuration>
+                    <configLocation>checkstyle.xml</configLocation>
+                    <consoleOutput>true</consoleOutput>
+                    <failOnViolation>true</failOnViolation>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
-
 </project>

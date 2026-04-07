@@ -21,10 +21,14 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Run tests with Maven Wrapper
-        run: |
-          ./mvnw spotless:check
-          ./mvnw -B test
+      - name: Check code formatting
+        run: ./mvnw spotless:check
 
-      - name: Build Package
+      - name: Check code style
+        run: ./mvnw checkstyle:check
+
+      - name: Run tests
+        run: ./mvnw -B test
+
+      - name: Build package
         run: ./mvnw -B package -DskipTests

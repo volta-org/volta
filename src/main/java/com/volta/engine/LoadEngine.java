@@ -29,6 +29,7 @@ public class LoadEngine {
     }
 
     this.url = url;
+
     this.targetRps = targetRps;
     this.durationSeconds = durationSeconds;
   }
