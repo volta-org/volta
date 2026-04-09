@@ -1,4 +1,4 @@
-package com.volta.http;
+package com.volta.agent.http;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.junit.jupiter.api.Assertions.*;
