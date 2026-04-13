@@ -39,7 +39,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.volta.agent.AgentMain</mainClass>
+                            <mainClass>com.volta.agent.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

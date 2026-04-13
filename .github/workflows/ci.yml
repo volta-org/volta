@@ -21,14 +21,5 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Check code formatting
-        run: ./mvnw spotless:check
-
-      - name: Check code style
-        run: ./mvnw checkstyle:check
-
-      - name: Run tests
-        run: ./mvnw -B test
-
-      - name: Build package
-        run: ./mvnw -B package -DskipTests
+      - name: Build and Test
+        run: ./mvnw -B verify

@@ -35,7 +35,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.volta.master.MasterApplication</mainClass>
+                            <mainClass>com.volta.master.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
