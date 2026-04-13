@@ -1,6 +1,6 @@
-package com.volta;
+package com.volta.agent;
 
-import com.volta.engine.LoadEngine;
+import com.volta.agent.engine.LoadEngine;
 
 public class Main {
   private static final String TARGET_URL = "https://jsonplaceholder.typicode.com/posts/1";
