@@ -25,9 +25,9 @@ Use `./mvnw` instead of `mvn` (ensures same Maven version for everyone)
     git checkout -b feature/stats-collector
     ```
 6. Write code and tests
-7. Validate locally (see the [Suppressing Checkstyle Warnings](#suppressing-checkstyle-warnings) section): 
+7. Verify locally (see the [Suppressing Checkstyle Warnings](#suppressing-checkstyle-warnings) section): 
     ```bash
-    ./mvnw test
+    ./mvnw verify
     ```
 8. Commit with a clear message in English ([Conventional Naming Style](#conventional-naming-style) recommended, but not strict):
    ```bash
