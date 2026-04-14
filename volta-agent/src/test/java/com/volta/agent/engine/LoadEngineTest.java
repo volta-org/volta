@@ -23,7 +23,7 @@ class LoadEngineTest {
   }
 
   @AfterEach
-  void tearDown() throws Exception {
+  void tearDown() {
     wireMock.stop();
   }
 

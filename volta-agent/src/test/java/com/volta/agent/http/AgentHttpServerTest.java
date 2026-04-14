@@ -111,7 +111,7 @@ class AgentHttpServerTest {
 
     HttpResponse<String> afterStart = sendGet(agentBaseUrl + "/stats");
     System.out.println("After: " + afterStart.body());
-    assertTrue(afterStart.body().contains("running: true")); // было "running":true
+    assertTrue(afterStart.body().contains("running: true"));
   }
 
   @Test
