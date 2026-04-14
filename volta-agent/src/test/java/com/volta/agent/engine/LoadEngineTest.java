@@ -1,10 +1,11 @@
-package com.volta.agent.engine;
+package com.volta.agent.core;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
+import com.volta.agent.engine.LoadEngine;
 import com.volta.agent.http.HttpSender;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
