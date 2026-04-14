@@ -102,7 +102,7 @@ feature: add stats collector
 Brief summary of changes.
 
 ## How to verify
-./mvnw test
+./mvnw verify
 
 Closes #<issue-number>
 ```
