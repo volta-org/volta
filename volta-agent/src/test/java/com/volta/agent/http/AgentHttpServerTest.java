@@ -45,10 +45,10 @@ class AgentHttpServerTest {
   @Test
   void startReturns200() throws Exception {
     String payload =
-            """
+        """
             {"url":"http://localhost:%d/test","rps":1,"duration":2}
             """
-                    .formatted(wireMock.port());
+            .formatted(wireMock.port());
 
     HttpResponse<String> response = postJson(agentBaseUrl + "/start", payload);
 
@@ -59,10 +59,10 @@ class AgentHttpServerTest {
   @Test
   void startReturns409WhenAlreadyRunning() throws Exception {
     String payload =
-            """
+        """
             {"url":"http://localhost:%d/test","rps":1,"duration":10}
             """
-                    .formatted(wireMock.port());
+            .formatted(wireMock.port());
 
     HttpResponse<String> first = postJson(agentBaseUrl + "/start", payload);
     HttpResponse<String> second = postJson(agentBaseUrl + "/start", payload);
@@ -82,10 +82,10 @@ class AgentHttpServerTest {
   @Test
   void stopReturns200() throws Exception {
     String payload =
-            """
+        """
             {"url":"http://localhost:%d/test","rps":1,"duration":60}
             """
-                    .formatted(wireMock.port());
+            .formatted(wireMock.port());
 
     postJson(agentBaseUrl + "/start", payload);
     HttpResponse<String> response = postJson(agentBaseUrl + "/stop", "");
@@ -97,10 +97,10 @@ class AgentHttpServerTest {
   @Test
   void statsReturnsCorrectRunningState() throws Exception {
     String payload =
-            """
+        """
             {"url":"http://localhost:%d/test","rps":1,"duration":10}
             """
-                    .formatted(wireMock.port());
+            .formatted(wireMock.port());
 
     HttpResponse<String> beforeStart = sendGet(agentBaseUrl + "/stats");
     System.out.println("Before: " + beforeStart.body());
@@ -111,7 +111,7 @@ class AgentHttpServerTest {
 
     HttpResponse<String> afterStart = sendGet(agentBaseUrl + "/stats");
     System.out.println("After: " + afterStart.body());
-    assertTrue(afterStart.body().contains("running: true"));  // было "running":true
+    assertTrue(afterStart.body().contains("running: true")); // было "running":true
   }
 
   @Test
@@ -130,11 +130,11 @@ class AgentHttpServerTest {
 
   private HttpResponse<String> postJson(String url, String json) throws Exception {
     HttpRequest request =
-            HttpRequest.newBuilder()
-                    .uri(URI.create(url))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(json))
-                    .build();
+        HttpRequest.newBuilder()
+            .uri(URI.create(url))
+            .header("Content-Type", "application/json")
+            .POST(HttpRequest.BodyPublishers.ofString(json))
+            .build();
     return client.send(request, HttpResponse.BodyHandlers.ofString());
   }
 
