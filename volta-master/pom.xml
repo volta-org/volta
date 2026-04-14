@@ -13,9 +13,7 @@
     <artifactId>volta-master</artifactId>
 
     <properties>
-        <spring.boot.version>3.2.5</spring.boot.version>
-        <java.version>21</java.version>
-        <logback.version>1.4.14</logback.version>
+        <spring.boot.version>3.4.5</spring.boot.version>
     </properties>
 
     <dependencyManagement>
@@ -35,6 +33,7 @@
         <dependency>
             <groupId>com.volta</groupId>
             <artifactId>volta-common</artifactId>
+            <!-- excluded to avoid conflict with Spring Boot's logback managed by starter-logging -->
             <exclusions>
                 <exclusion>
                     <groupId>ch.qos.logback</groupId>
