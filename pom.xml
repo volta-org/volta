@@ -24,6 +24,8 @@
         <junit.version>6.0.3</junit.version>
         <wiremock.version>3.13.2</wiremock.version>
         <logback.version>1.5.32</logback.version>
+        <jackson.version>2.21.2</jackson.version>
+        <jetty.version>12.0.32</jetty.version>
 
         <!-- Plugin versions -->
         <surefire.version>3.2.5</surefire.version>
@@ -35,6 +37,20 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-bom</artifactId>
+                <version>${jetty.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>com.volta</groupId>
                 <artifactId>volta-common</artifactId>
@@ -48,15 +64,9 @@
             </dependency>
             <dependency>
                 <groupId>org.wiremock</groupId>
-                <artifactId>wiremock</artifactId>
+                <artifactId>wiremock-jetty12</artifactId>
                 <version>${wiremock.version}</version>
                 <scope>test</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>ch.qos.logback</groupId>
