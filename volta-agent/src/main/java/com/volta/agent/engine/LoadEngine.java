@@ -1,6 +1,8 @@
 package com.volta.agent.engine;
 
 import com.volta.agent.http.HttpSender;
+import com.volta.stats.StatsCollector;
+import com.volta.stats.StatsSnapshot;
 import java.net.http.HttpResponse;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -10,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 public class LoadEngine {
   private static final Logger log = LoggerFactory.getLogger(LoadEngine.class);
+  private final StatsCollector collector = new StatsCollector();
 
   private final String url;
   private final int targetRps;
@@ -29,7 +32,6 @@ public class LoadEngine {
     }
 
     this.url = url;
-
     this.targetRps = targetRps;
     this.durationSeconds = durationSeconds;
   }
@@ -44,6 +46,12 @@ public class LoadEngine {
 
     try (HttpSender sender = new HttpSender();
         ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+
+      // sender warmup. TODO
+      //      try (HttpSender sender = new HttpSender()) {
+      //        sender.send(baseUrl + "/test");
+      //      } catch (Exception ignored) {
+      //      }
 
       while (running && System.nanoTime() < endTime) {
 
@@ -67,10 +75,17 @@ public class LoadEngine {
 
         executor.submit(
             () -> {
+              long startNano = System.nanoTime();
               try {
                 HttpResponse<String> response = sender.send(url);
-                log.info("Status: {}, Body: {}", response.statusCode(), response.body());
+                long latencyMs = (System.nanoTime() - startNano) / 1_000_000;
+
+                collector.record(response.statusCode(), latencyMs);
+                log.info("Status: {}", response.statusCode());
               } catch (Exception e) {
+                long latencyMs = (System.nanoTime() - startNano) / 1_000_000;
+
+                collector.record(503, latencyMs);
                 log.error("Request failed", e);
               } finally {
                 semaphore.release();
@@ -90,6 +105,14 @@ public class LoadEngine {
     // try-with-resources handles executor.close() and sender.close()
     running = false;
     log.info("Test finished");
+  }
+
+  public StatsSnapshot getStats() {
+    return collector.getSnapshot();
+  }
+
+  public StatsSnapshot getStatsAndReset() {
+    return collector.getSnapshotAndReset();
   }
 
   public void stop() {

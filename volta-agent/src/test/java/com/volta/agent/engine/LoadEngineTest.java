@@ -5,7 +5,6 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
-import com.volta.agent.http.HttpSender;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,7 +13,6 @@ class LoadEngineTest {
 
   private WireMockServer wireMock;
   private String baseUrl;
-  private HttpSender sender;
 
   @BeforeEach
   void setUp() {
@@ -22,18 +20,10 @@ class LoadEngineTest {
     wireMock.start();
     wireMock.stubFor(get("/test").willReturn(ok("OK")));
     baseUrl = "http://localhost:" + wireMock.port();
-
-    try (HttpSender sender = new HttpSender()) {
-      sender.send(baseUrl + "/test");
-    } catch (Exception ignored) {
-    }
   }
 
   @AfterEach
   void tearDown() throws Exception {
-    if (sender != null) {
-      sender.close();
-    }
     wireMock.stop();
   }
 
