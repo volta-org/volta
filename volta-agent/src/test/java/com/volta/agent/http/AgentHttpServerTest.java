@@ -5,8 +5,10 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.volta.agent.core.AgentRuntime;
+import com.volta.stats.StatsSnapshot;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.URI;
@@ -76,7 +78,7 @@ class AgentHttpServerTest {
     HttpResponse<String> response = sendGet(agentBaseUrl + "/stats");
 
     assertEquals(200, response.statusCode());
-    assertTrue(response.body().contains("running"));
+    assertTrue(response.body().contains("totalRequests"));
   }
 
   @Test
@@ -104,14 +106,14 @@ class AgentHttpServerTest {
 
     HttpResponse<String> beforeStart = sendGet(agentBaseUrl + "/stats");
     System.out.println("Before: " + beforeStart.body());
-    assertTrue(beforeStart.body().contains("running: false")); // было "running":false
+    assertTrue(beforeStart.body().contains("\"totalRequests\":0"));
 
     postJson(agentBaseUrl + "/start", payload);
-    Thread.sleep(100);
+    Thread.sleep(200);
 
     HttpResponse<String> afterStart = sendGet(agentBaseUrl + "/stats");
     System.out.println("After: " + afterStart.body());
-    assertTrue(afterStart.body().contains("running: true"));
+    assertTrue(afterStart.body().contains("\"totalRequests\":"));
   }
 
   @Test
@@ -126,6 +128,87 @@ class AgentHttpServerTest {
     HttpResponse<String> response = sendGet(agentBaseUrl + "/start");
 
     assertEquals(405, response.statusCode());
+  }
+
+  @Test
+  void statsShowsRealRequestCount() throws Exception {
+    String payload =
+        """
+            {"url":"http://localhost:%d/test","rps":5,"duration":2}
+            """
+            .formatted(wireMock.port());
+
+    postJson(agentBaseUrl + "/start", payload);
+    Thread.sleep(2500);
+
+    HttpResponse<String> response = sendGet(agentBaseUrl + "/stats");
+
+    assertTrue(response.body().contains("\"totalRequests\":"));
+    StatsSnapshot stats = new ObjectMapper().readValue(response.body(), StatsSnapshot.class);
+    assertTrue(
+        stats.totalRequests() >= 8 && stats.totalRequests() <= 12,
+        "Expected ~10 requests, got " + stats.totalRequests());
+  }
+
+  @Test
+  void statsShowsSuccessCount() throws Exception {
+    wireMock.stubFor(get("/success").willReturn(ok("OK")));
+
+    String payload =
+        """
+            {"url":"http://localhost:%d/success","rps":5,"duration":1}
+            """
+            .formatted(wireMock.port());
+
+    postJson(agentBaseUrl + "/start", payload);
+    Thread.sleep(1500);
+
+    HttpResponse<String> response = sendGet(agentBaseUrl + "/stats");
+    StatsSnapshot stats = new ObjectMapper().readValue(response.body(), StatsSnapshot.class);
+
+    assertTrue(stats.successCount() > 0, "Should have successful requests");
+    assertEquals(0, stats.errorCount(), "Should have no errors");
+  }
+
+  @Test
+  void statsShowsErrorCount() throws Exception {
+    wireMock.stubFor(get("/error").willReturn(serverError()));
+
+    String payload =
+        """
+            {"url":"http://localhost:%d/error","rps":5,"duration":1}
+            """
+            .formatted(wireMock.port());
+
+    postJson(agentBaseUrl + "/start", payload);
+    Thread.sleep(1500);
+
+    HttpResponse<String> response = sendGet(agentBaseUrl + "/stats");
+    StatsSnapshot stats = new ObjectMapper().readValue(response.body(), StatsSnapshot.class);
+
+    assertTrue(stats.errorCount() > 0, "Should have errors");
+    assertEquals(0, stats.successCount(), "Should have no successful requests");
+  }
+
+  @Test
+  void statsShowsLatency() throws Exception {
+    wireMock.stubFor(get("/slow").willReturn(ok().withFixedDelay(100)));
+
+    String payload =
+        """
+            {"url":"http://localhost:%d/slow","rps":5,"duration":1}
+            """
+            .formatted(wireMock.port());
+
+    postJson(agentBaseUrl + "/start", payload);
+    Thread.sleep(1500);
+
+    HttpResponse<String> response = sendGet(agentBaseUrl + "/stats");
+    StatsSnapshot stats = new ObjectMapper().readValue(response.body(), StatsSnapshot.class);
+
+    assertTrue(
+        stats.avgLatencyMs() >= 90, "Avg latency should be ~100ms, got " + stats.avgLatencyMs());
+    assertTrue(stats.minLatencyMs() >= 90, "Min latency should be ~100ms");
   }
 
   private HttpResponse<String> postJson(String url, String json) throws Exception {

@@ -1,20 +1,16 @@
 package com.volta.agent.core;
 
 import com.volta.agent.engine.LoadEngine;
-import com.volta.stats.StatsCollector;
 import com.volta.stats.StatsSnapshot;
 
 public class AgentRuntime {
   private volatile boolean isRunning = false;
   private LoadEngine currentEngine = null;
-  private StatsCollector collector = new StatsCollector();
 
   public synchronized boolean start(String url, int targetRps, int durationSeconds) {
     if (isRunning) {
       return false;
     }
-
-    collector = new StatsCollector();
 
     isRunning = true;
     currentEngine = new LoadEngine(url, targetRps, durationSeconds);
@@ -36,7 +32,10 @@ public class AgentRuntime {
   }
 
   public StatsSnapshot getStatsSnapshot() {
-    return collector.getSnapshot();
+    if (currentEngine == null) {
+      return new StatsSnapshot(0, 0, 0, 0.0, 0, 0);
+    }
+    return currentEngine.getStats();
   }
 
   public boolean isRunning() {
