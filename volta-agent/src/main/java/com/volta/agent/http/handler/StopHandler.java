@@ -4,6 +4,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.volta.agent.core.AgentRuntime;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public class StopHandler implements HttpHandler {
   private final AgentRuntime runtime;
@@ -19,11 +20,18 @@ public class StopHandler implements HttpHandler {
       return;
     }
 
+    if (!runtime.isRunning()) {
+      exchange.sendResponseHeaders(409, -1);
+      return;
+    }
+
     runtime.stop();
 
     String response = "Test stopped";
-    exchange.sendResponseHeaders(200, response.length());
-    exchange.getResponseBody().write(response.getBytes());
+    byte[] responseBytes = response.getBytes(StandardCharsets.UTF_8);
+    exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=UTF-8");
+    exchange.sendResponseHeaders(200, responseBytes.length);
+    exchange.getResponseBody().write(responseBytes);
     exchange.close();
   }
 }

@@ -14,5 +14,13 @@ public class AgentMain {
     AgentHttpServer server = new AgentHttpServer(runtime, port);
     server.start();
     System.out.println("Agent started on port " + port);
+
+    Runtime.getRuntime()
+        .addShutdownHook(
+            new Thread(
+                () -> {
+                  System.out.println("Stopping agent...");
+                  server.stop();
+                }));
   }
 }

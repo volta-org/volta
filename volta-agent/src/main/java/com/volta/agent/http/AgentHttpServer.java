@@ -26,4 +26,8 @@ public class AgentHttpServer {
   public void start() {
     server.start();
   }
+
+  public void stop() {
+    server.stop(0);
+  }
 }

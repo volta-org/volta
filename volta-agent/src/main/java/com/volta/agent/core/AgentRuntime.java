@@ -25,20 +25,28 @@ public class AgentRuntime {
     return true;
   }
 
-  public void stop() {
+  public synchronized void stop() {
     if (currentEngine != null) {
       currentEngine.stop();
     }
+    isRunning = false;
   }
 
-  public StatsSnapshot getStatsSnapshot() {
+  public synchronized StatsSnapshot getStatsSnapshot() {
     if (currentEngine == null) {
       return new StatsSnapshot(0, 0, 0, 0.0, 0, 0);
     }
     return currentEngine.getStats();
   }
 
-  public boolean isRunning() {
+  public synchronized StatsSnapshot getStatsSnapshotAndReset() {
+    if (currentEngine == null) {
+      return new StatsSnapshot(0, 0, 0, 0.0, 0, 0);
+    }
+    return currentEngine.getStatsAndReset();
+  }
+
+  public synchronized boolean isRunning() {
     return isRunning;
   }
 }

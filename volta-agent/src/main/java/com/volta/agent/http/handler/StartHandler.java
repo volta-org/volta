@@ -30,18 +30,31 @@ public class StartHandler implements HttpHandler {
       config = objectMapper.readValue(json, TestConfig.class);
     } catch (Exception e) {
       String error = "Invalid JSON";
-      exchange.sendResponseHeaders(400, error.length());
-      exchange.getResponseBody().write(error.getBytes());
+      byte[] errorBytes = error.getBytes(StandardCharsets.UTF_8);
+      exchange.sendResponseHeaders(400, errorBytes.length);
+      exchange.getResponseBody().write(errorBytes);
       exchange.close();
       return;
     }
 
-    boolean started = runtime.start(config.url(), config.rps(), config.duration());
+    boolean started;
+    try {
+      started = runtime.start(config.url(), config.rps(), config.duration());
+    } catch (IllegalArgumentException e) {
+      String error = "Invalid parameters: " + e.getMessage();
+      byte[] errorBytes = error.getBytes(StandardCharsets.UTF_8);
+      exchange.sendResponseHeaders(400, errorBytes.length);
+      exchange.getResponseBody().write(errorBytes);
+      exchange.close();
+      return;
+    }
 
     if (started) {
       String response = "Test started";
-      exchange.sendResponseHeaders(200, response.length());
-      exchange.getResponseBody().write(response.getBytes());
+      byte[] responseBytes = response.getBytes(StandardCharsets.UTF_8);
+      exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=UTF-8");
+      exchange.sendResponseHeaders(200, responseBytes.length);
+      exchange.getResponseBody().write(responseBytes);
     } else {
       exchange.sendResponseHeaders(409, -1);
     }
