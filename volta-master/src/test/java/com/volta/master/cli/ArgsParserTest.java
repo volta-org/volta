@@ -25,7 +25,7 @@ class CliArgsParserTest {
     TestConfig config = result.testConfig();
     assertEquals("https://httpbin.org/get", config.url());
     assertEquals(10, config.rps());
-    assertEquals(30, config.durationSeconds());
+    assertEquals(30, config.duration());
     assertEquals("localhost:7070", result.agentUrl());
   }
 
