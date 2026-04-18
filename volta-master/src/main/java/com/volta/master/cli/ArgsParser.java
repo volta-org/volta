@@ -4,13 +4,14 @@ import com.volta.model.TestConfig;
 import org.springframework.boot.ApplicationArguments;
 
 public class ArgsParser {
+
   private static final String USAGE =
       """
-       Usage:   java -jar volta-master.jar --url=<url> --rps=<rps> --duration=<seconds> --agent=<host:port>
+      Usage:   java -jar volta-master.jar --url=<url> --rps=<rps> --duration=<seconds> --agent=<host:port>
       Example: java -jar volta-master.jar --url=https://httpbin.org/get --rps=10 --duration=30 --agent=localhost:7070
       """;
 
-  public static TestConfig parse(ApplicationArguments args) {
+  public static MasterArgs parse(ApplicationArguments args) {
     String url = requireString(args, "url");
     int rps = requirePositiveInt(args, "rps");
     int duration = requirePositiveInt(args, "duration");
@@ -19,14 +20,14 @@ public class ArgsParser {
     validateUrl(url);
     validateAgent(agent);
 
-    return new TestConfig(url, rps, duration, agent);
+    return new MasterArgs(new TestConfig(url, rps, duration), agent);
   }
 
   private static String requireString(ApplicationArguments args, String name) {
     if (!args.containsOption(name)) {
       throw new ArgsException("Missing required argument: --" + name + "\n" + USAGE);
     }
-    String value = args.getOptionValues(name).getFirst();
+    String value = args.getOptionValues(name).get(0);
     if (value == null || value.isBlank()) {
       throw new ArgsException("Argument --" + name + " must not be blank\n" + USAGE);
     }

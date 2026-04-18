@@ -1,3 +1,3 @@
 package com.volta.model;
 
-public record TestConfig(String url, int rps, int durationSeconds, String agent) {}
+public record TestConfig(String url, int rps, int durationSeconds) {}

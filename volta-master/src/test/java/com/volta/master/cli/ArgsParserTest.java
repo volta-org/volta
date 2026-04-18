@@ -6,15 +6,15 @@ import com.volta.model.TestConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.DefaultApplicationArguments;
 
-class ArgsParserTest {
+class CliArgsParserTest {
 
   private static DefaultApplicationArguments args(String... rawArgs) {
     return new DefaultApplicationArguments(rawArgs);
   }
 
   @Test
-  void validArgsProduceCorrectTestConfig() {
-    TestConfig config =
+  void validArgsProduceCorrectMasterArgs() {
+    MasterArgs result =
         ArgsParser.parse(
             args(
                 "--url=https://httpbin.org/get",
@@ -22,10 +22,11 @@ class ArgsParserTest {
                 "--duration=30",
                 "--agent=localhost:7070"));
 
+    TestConfig config = result.testConfig();
     assertEquals("https://httpbin.org/get", config.url());
     assertEquals(10, config.rps());
     assertEquals(30, config.durationSeconds());
-    assertEquals("localhost:7070", config.agent());
+    assertEquals("localhost:7070", result.agentUrl());
   }
 
   @Test
