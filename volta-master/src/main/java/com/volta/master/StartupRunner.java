@@ -42,7 +42,7 @@ public class StartupRunner implements ApplicationRunner {
         masterArgs.testConfig().duration(),
         masterArgs.agentUrl());
 
-    agentClient.startTest("http://" + masterArgs.agentUrl(), masterArgs.testConfig());
+    agentClient.startTest(masterArgs.agentUrl(), masterArgs.testConfig());
 
     statsReporter.startReporting(masterArgs.agentUrl(), masterArgs.testConfig().duration());
   }
