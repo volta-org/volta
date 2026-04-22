@@ -20,6 +20,8 @@ public class ArgsParser {
     validateUrl(url);
     validateAgent(agent);
 
+    agent = "http://" + agent;
+
     return new MasterArgs(new TestConfig(url, rps, duration), agent);
   }
 

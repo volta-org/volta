@@ -39,19 +39,20 @@ public class LoadEngine {
   public void start() {
     running = true;
     long intervalNanos = 1_000_000_000L / targetRps;
-    long endTime = System.nanoTime() + (long) durationSeconds * 1_000_000_000L;
-    long sendNextTime = System.nanoTime();
+    long endTime;
+    long sendNextTime;
 
     Semaphore semaphore = new Semaphore(MAX_CONCURRENT_REQUESTS);
 
     try (HttpSender sender = new HttpSender();
         ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
 
-      // sender warmup. TODO
-      //      try (HttpSender sender = new HttpSender()) {
-      //        sender.send(baseUrl + "/test");
-      //      } catch (Exception ignored) {
-      //      }
+      //      warmup(sender, executor);
+      //
+      //      collector.getSnapshotAndReset();
+
+      endTime = System.nanoTime() + (long) durationSeconds * 1_000_000_000L;
+      sendNextTime = System.nanoTime();
 
       while (running && System.nanoTime() < endTime) {
 
@@ -81,7 +82,6 @@ public class LoadEngine {
                 long latencyMs = (System.nanoTime() - startNano) / 1_000_000;
 
                 collector.record(response.statusCode(), latencyMs);
-                log.info("Status: {}", response.statusCode());
               } catch (Exception e) {
                 long latencyMs = (System.nanoTime() - startNano) / 1_000_000;
 
@@ -117,5 +117,22 @@ public class LoadEngine {
 
   public void stop() {
     running = false;
+  }
+
+  private void warmup(HttpSender sender, ExecutorService executor) {
+    log.info("Warming up...");
+    for (int i = 0; i < 200; i++) {
+      executor.submit(
+          () -> {
+            try {
+              sender.send(url);
+            } catch (Exception ignored) {
+            }
+          });
+    }
+    try {
+      Thread.sleep(200);
+    } catch (InterruptedException ignored) {
+    }
   }
 }

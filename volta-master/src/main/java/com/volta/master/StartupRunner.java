@@ -3,6 +3,8 @@ package com.volta.master;
 import com.volta.master.cli.ArgsException;
 import com.volta.master.cli.ArgsParser;
 import com.volta.master.cli.MasterArgs;
+import com.volta.master.client.AgentClient;
+import com.volta.master.reporter.StatsReporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -12,7 +14,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class StartupRunner implements ApplicationRunner {
 
+  private final AgentClient agentClient;
+  private final StatsReporter statsReporter;
+
   private static final Logger log = LoggerFactory.getLogger(StartupRunner.class);
+
+  public StartupRunner(AgentClient agentClient, StatsReporter statsReporter) {
+    this.agentClient = agentClient;
+    this.statsReporter = statsReporter;
+  }
 
   @Override
   public void run(ApplicationArguments args) {
@@ -32,6 +42,8 @@ public class StartupRunner implements ApplicationRunner {
         masterArgs.testConfig().duration(),
         masterArgs.agentUrl());
 
-    // agentClient.startTest(masterArgs.agentUrl(), masterArgs.testConfig());
+    agentClient.startTest(masterArgs.agentUrl(), masterArgs.testConfig());
+
+    statsReporter.startReporting(masterArgs.agentUrl(), masterArgs.testConfig().duration());
   }
 }
