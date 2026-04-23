@@ -2,6 +2,8 @@
 
 Distributed load testing system for HTTP services with AI-powered analysis.
 
+<video src="https://github.com/user-attachments/assets/c950e3b6-1e26-47a4-9af7-d70468d9bc2f" autoplay loop muted playsinline width="100%"></video>
+
 ## Prerequisites
 
 - Java 21+
