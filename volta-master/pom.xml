@@ -13,7 +13,7 @@
     <artifactId>volta-master</artifactId>
 
     <properties>
-        <spring.boot.version>3.4.5</spring.boot.version>
+        <spring.boot.version>4.0.5</spring.boot.version>
     </properties>
 
     <dependencyManagement>

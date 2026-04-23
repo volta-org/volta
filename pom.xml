@@ -25,13 +25,13 @@
         <wiremock.version>3.13.2</wiremock.version>
         <logback.version>1.5.32</logback.version>
         <jackson.version>2.21.2</jackson.version>
-        <jetty.version>12.0.32</jetty.version>
+        <jetty.version>12.1.8</jetty.version>
 
         <!-- Plugin versions -->
-        <surefire.version>3.2.5</surefire.version>
+        <surefire.version>3.5.5</surefire.version>
         <jar-plugin.version>3.5.0</jar-plugin.version>
         <shade-plugin.version>3.6.2</shade-plugin.version>
-        <spotless.version>3.3.0</spotless.version>
+        <spotless.version>3.4.0</spotless.version>
         <checkstyle.version>3.6.0</checkstyle.version>
     </properties>
 
