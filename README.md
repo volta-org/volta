@@ -40,6 +40,11 @@ java -jar volta-master/target/volta-master-1.0-SNAPSHOT.jar \
   --agent=localhost:7070
 ```
 
+Stats file (optional): `--stats-out=path`
+
+- Ends with `.csv` → header row + CSV lines (`sample` each second + one `final` row).
+- Any other suffix (for example `.jsonl`) → one JSON object per line (serialized `StatsSnapshot`).
+
 Expected output:
 ```
 [RPS: 0 | Success: 0.0% | Avg: 0ms | Errors: 0]
