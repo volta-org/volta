@@ -1,0 +1,616 @@
+openapi: 3.0.3
+info:
+  title: UI Volta API
+  description: API для веб-интерфейса Volta
+  version: '1.0'
+security:
+  - BearerAuth: []
+servers:
+  - url: https://api.example/
+paths:
+  /api/tests:
+    get:
+      summary: Получение списка тестов
+      description: Вызывается при открытии экрана /tests
+      responses:
+        '200':
+          description: Список тестов успешно получен
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TestPreview'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Запуск нового теста
+      description: Вызывается при нажатии кнопки "Start test" на экране /tests/new.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TestConfig'
+      responses:
+        '201':
+          description: Тест успешно запущен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestID'
+        '400':
+          description: Некорректные параметры конфигурации теста
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/tests/{id}:
+    get:
+      summary: Получение данных конкретного теста
+      description: >-
+        Вызывается при даблклике на строку в таблице (/tests) и при открытии
+        экрана /tests/{id}/runtime.
+      parameters:
+        - $ref: '#/components/parameters/TestId'
+      responses:
+        '200':
+          description: Данные теста успешно получены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Test'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Тест не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/tests/{id}/stats:
+    get:
+      summary: Получение текущей статистики выполняющегося теста
+      description: Вызывается на экране /tests/{id}/runtime каждую секунду.
+      parameters:
+        - $ref: '#/components/parameters/TestId'
+      responses:
+        '200':
+          description: Статистика успешно получена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestStats'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Тест не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/tests/{id}/analysis:
+    get:
+      summary: Получение результатов анализа теста
+      description: Вызывается при открытии экрана /tests/{id}/analysis.
+      parameters:
+        - $ref: '#/components/parameters/TestId'
+      responses:
+        '200':
+          description: Анализ успешно получен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestAnalysis'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Тест или анализ не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/users:
+    get:
+      summary: Получение списка пользователей
+      description: Вызывается при открытии экрана /users.
+      responses:
+        '200':
+          description: Список пользователей успешно получен
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserPreview'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Недостаточно прав для просмотра пользователей
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Создание нового пользователя
+      description: Вызывается при нажатии кнопки "Save" на экране /users/new.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+      responses:
+        '201':
+          description: Пользователь успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserID'
+        '400':
+          description: Некорректные данные пользователя
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Недостаточно прав для создания пользователей
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/users/{id}:
+    get:
+      summary: Получение данных конкретного пользователя
+      description: Вызывается при даблклике на строку в таблице (/users).
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: Данные пользователя успешно получены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Пользователь не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: Обновление данных пользователя
+      description: Вызывается при нажатии кнопки "Save" на экране /users/{id}.
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+      responses:
+        '200':
+          description: Данные пользователя успешно обновлены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Некорректные данные
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Недостаточно прав для редактирования
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Пользователь не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Удаление пользователя
+      description: Вызывается при нажатии кнопки "Delete" на экране /users/{id}.
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '204':
+          description: Пользователь успешно удалён
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Недостаточно прав для удаления
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Пользователь не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  parameters:
+    TestId:
+      name: id
+      in: path
+      required: true
+      description: Идентификатор теста
+      schema:
+        $ref: '#/components/schemas/TestID'
+    UserId:
+      name: id
+      in: path
+      required: true
+      description: Идентификатор пользователя
+      schema:
+        $ref: '#/components/schemas/UserID'
+  schemas:
+    TestConfig:
+      description: Конфигурация нагрузочного теста
+      type: object
+      required:
+        - rps
+        - duration
+        - url
+        - loadType
+      properties:
+        rps:
+          type: integer
+          description: Количество запросов в секунду
+          minimum: 1
+        duration:
+          type: integer
+          description: Длительность теста в секундах
+          minimum: 1
+        url:
+          type: string
+          format: uri
+          description: URL цели нагрузочного теста
+        loadType:
+          $ref: '#/components/schemas/LoadType'
+    Test:
+      description: Полные данные завершенного теста.
+      type: object
+      required:
+        - testId
+        - config
+        - totalRequests
+        - totalErrors
+        - p50
+        - p95
+        - p99
+      properties:
+        testId:
+          $ref: '#/components/schemas/TestID'
+        config:
+          $ref: '#/components/schemas/TestConfig'
+        totalRequests:
+          type: integer
+          description: Общее количество запросов за тест
+        totalErrors:
+          type: integer
+          description: Общее количество ошибок за тест
+        p50:
+          type: number
+          format: float
+        p95:
+          type: number
+          format: float
+        p99:
+          type: number
+          format: float
+    TestPreview:
+      description: Краткое представление теста для списка.
+      type: object
+      required:
+        - testId
+        - config
+      properties:
+        testId:
+          $ref: '#/components/schemas/TestID'
+        config:
+          $ref: '#/components/schemas/TestConfig'
+    TestStats:
+      description: Статистика теста в реальном времени.
+      type: object
+      required:
+        - timestamp
+        - rps
+        - errorsPerSec
+        - latency
+        - p50
+        - p95
+        - p99
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: Время снятия метрики
+        rps:
+          type: number
+          format: float
+          description: Количество запросов в секунду
+        errorsPerSec:
+          type: number
+          format: float
+          description: Количество ошибок в секунду
+        latency:
+          type: number
+          format: float
+        p50:
+          type: number
+          format: float
+        p95:
+          type: number
+          format: float
+        p99:
+          type: number
+          format: float
+    TestAnalysis:
+      description: Результаты AI-анализа теста
+      type: object
+      required:
+        - id
+        - testId
+        - status
+        - summary
+        - anomalies
+        - recommendations
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Идентификатор анализа
+        testId:
+          $ref: '#/components/schemas/TestID'
+        status:
+          type: string
+          enum:
+            - PROCESSING
+            - COMPLETED
+          description: Статус анализа
+        summary:
+          type: string
+          description: Общий вывод по результатам теста
+        anomalies:
+          type: array
+          description: Список аномалий
+          items:
+            type: string
+        recommendations:
+          type: array
+          description: Список рекомендаций
+          items:
+            type: string
+    User:
+      description: Полные данные пользователя
+      type: object
+      required:
+        - userId
+        - login
+        - rights
+        - name
+        - surname
+        - email
+      properties:
+        userId:
+          $ref: '#/components/schemas/UserID'
+        login:
+          type: string
+          description: Логин пользователя
+        rights:
+          $ref: '#/components/schemas/Rights'
+        name:
+          type: string
+          description: Имя пользователя
+        surname:
+          type: string
+          description: Фамилия пользователя
+        email:
+          type: string
+          format: email
+          description: Email пользователя
+    UserPreview:
+      description: Краткое представление пользователя для списка
+      type: object
+      required:
+        - userId
+        - login
+        - rights
+        - name
+        - surname
+      properties:
+        userId:
+          $ref: '#/components/schemas/UserID'
+        login:
+          type: string
+          description: Логин пользователя
+        rights:
+          $ref: '#/components/schemas/Rights'
+        name:
+          type: string
+          description: Имя пользователя
+        surname:
+          type: string
+          description: Фамилия пользователя
+    UserUpdate:
+      description: Тело запроса для создания и обновления пользователя.
+      type: object
+      properties:
+        login:
+          type: string
+          description: Логин пользователя
+        rights:
+          $ref: '#/components/schemas/Rights'
+        name:
+          type: string
+          description: Имя пользователя
+        surname:
+          type: string
+          description: Фамилия пользователя
+        email:
+          type: string
+          format: email
+          description: Email пользователя
+    TestID:
+      description: Уникальный идентификатор теста
+      type: string
+      format: uuid
+    UserID:
+      description: Уникальный идентификатор пользователя
+      type: string
+      format: uuid
+    LoadType:
+      type: string
+      enum:
+        - SPIKE
+        - CONSTANT
+        - GRADUAL
+      description: Тип нагрузки
+    Rights:
+      type: string
+      enum:
+        - Viewer
+        - Editor
+        - Admin
+      description: Роль / уровень прав пользователя
+    ErrorResponse:
+      description: Cтруктура ошибки
+      type: object
+      required:
+        - errorCode
+        - message
+      properties:
+        errorCode:
+          type: string
+          description: Код ошибки
+        message:
+          type: string
+          description: Описание ошибки
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
