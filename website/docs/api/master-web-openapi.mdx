@@ -1,0 +1,103 @@
+---
+title: OpenAPI
+sidebar_position: 1
+description: OpenAPI спецификация для взаимодействия Web интерфейса с Мастером
+hide_table_of_contents: true
+---
+
+## Сущности
+
+### User:
+
+- UserID
+- Login
+- Rights
+- Name
+- Surname
+- Email
+
+### TestConfig:
+
+- ConfigID
+- RPS
+- Duration
+- URL
+- Load type
+
+### TestStats:
+
+- Timestamp
+- RPS
+- Errors/sec
+- Latency
+- p50
+- p95
+- p99
+
+### Test:
+
+- TestID
+- TestConfig
+- Total Requests
+- Total Errors
+- p50
+- p95
+- p99
+
+### TestAnalysis:
+
+- ID
+- TestID
+- Status
+- Summary
+- Anomalies
+- Recommendations
+
+### ErrorResponse
+
+- Error code
+- Error message
+
+## Привязка к эндпоинтам
+
+```
+| Роут экрана          | Действие                       | Метод + Эндпоинт             | Модель (Request) | Модель (Response)  |
+|----------------------|--------------------------------|------------------------------|------------------|--------------------|
+| /tests/new           | Нажатие на кнопку "Start test" | POST /api/tests              | TestConfig       | TestID             |
+| /tests               | При открытии экрана            | GET /api/tests               |                  | Array[TestPreview] |
+| /tests               | Даблклик на поле               | GET /api/tests/{id}          |                  | Test               |
+| /users               | При открытии экрана            | GET /api/users               |                  | Array[UserPreview] |
+| /users               | Даблклик на поле               | GET /api/users/{id}          |                  | User               |
+| /users/{id}          | Нажатие на кнопку "Save"       | PATCH /api/users/{id}        | UserUpdate       |                    |
+| /users/new           | Нажатие на кнопку "Save"       | POST /api/users              | UserUpdate       | UserID             |
+| /users/{id}          | Нажатие на кнопку "Delete"     | DELETE /api/users/{id}       |                  |                    |
+| /tests/{id}/runtime  | При открытии экрана            | GET /api/tests/{id}          |                  | Test               |
+| /tests/{id}/runtime  | Каждую секунду                 | GET /api/tests/{id}/stats    |                  | TestStats          |
+| /tests/{id}/analysis | При открытии экрана            | GET /api/tests/{id}/analysis |                  | TestAnalysis       |
+```
+
+### TestPreview:
+
+- TestID
+- Load type
+- URL
+- Duration
+- RPS
+
+### UserPreview:
+
+- UserID
+- Login
+- Rights
+- Name
+- Surname
+
+### UserUpdate:
+
+То же что и User только все поля необязательные.
+
+import ApiDocMdx from '@theme/ApiDocMdx';
+
+## OpenAPI спецификация
+
+<ApiDocMdx id="volta" />
