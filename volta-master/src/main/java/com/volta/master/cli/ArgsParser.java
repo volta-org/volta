@@ -1,28 +1,77 @@
 package com.volta.master.cli;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.volta.model.TestConfig;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import org.springframework.boot.ApplicationArguments;
 
 public class ArgsParser {
 
   private static final String USAGE =
       """
-      Usage:   java -jar volta-master.jar --url=<url> --rps=<rps> --duration=<seconds> --agent=<host:port>
-      Example: java -jar volta-master.jar --url=https://httpbin.org/get --rps=10 --duration=30 --agent=localhost:7070
-      """;
+          Usage:   java -jar volta-master.jar --url=<url> --rps=<rps> --duration=<seconds> --agent=<host:port>
+                   java -jar volta-master.jar --config=./<config.json(.yaml/.yml)> --agent=<host:port>
+
+          Example: java -jar volta-master.jar --url=https://httpbin.org/get --rps=10 --duration=30 --agent=localhost:7070
+                   java -jar volta-master.jar --config=./config.json --agent=localhost:7070
+          """;
 
   public static MasterArgs parse(ApplicationArguments args) {
-    String url = requireString(args, "url");
-    int rps = requirePositiveInt(args, "rps");
-    int duration = requirePositiveInt(args, "duration");
-    String agent = requireString(args, "agent");
 
-    validateUrl(url);
+    TestConfig testConfig;
+    if (args.containsOption("config")) {
+      String configPath = requireString(args, "config");
+
+      Path path = Path.of(configPath);
+      if (!Files.exists(path)) {
+        throw new ArgsException("Config file not found: " + configPath + "\n" + USAGE);
+      }
+      if (!Files.isRegularFile(path)) {
+        throw new ArgsException("Config path is not a regular file: " + configPath + "\n" + USAGE);
+      }
+
+      ObjectMapper mapper;
+      String name = path.getFileName().toString().toLowerCase();
+      if (name.endsWith(".json")) {
+        mapper = new ObjectMapper();
+      } else if (name.endsWith(".yaml") || name.endsWith(".yml")) {
+        mapper = new ObjectMapper(new YAMLFactory());
+      } else {
+        throw new ArgsException("Unsupported file format: " + configPath + "\n" + USAGE);
+      }
+
+      try {
+        testConfig = mapper.readValue(path.toFile(), TestConfig.class);
+      } catch (IOException e) {
+        throw new ArgsException(
+            "Failed to read/parse config: " + configPath + "\n" + e.getMessage() + "\n" + USAGE);
+      }
+
+      if (testConfig.rps() <= 0) {
+        throw new ArgsException("Argument rps in config must be positive\n" + USAGE);
+      }
+      if (testConfig.duration() <= 0) {
+        throw new ArgsException("Argument duration in config must be positive\n" + USAGE);
+      }
+      validateUrl(testConfig.url());
+
+    } else {
+      String url = requireString(args, "url");
+      int rps = requirePositiveInt(args, "rps");
+      int duration = requirePositiveInt(args, "duration");
+
+      validateUrl(url);
+      testConfig = new TestConfig(url, rps, duration);
+    }
+    String agent = requireString(args, "agent");
     validateAgent(agent);
 
     agent = "http://" + agent;
 
-    return new MasterArgs(new TestConfig(url, rps, duration), agent);
+    return new MasterArgs(testConfig, agent);
   }
 
   private static String requireString(ApplicationArguments args, String name) {

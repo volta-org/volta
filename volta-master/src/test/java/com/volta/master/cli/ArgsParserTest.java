@@ -3,13 +3,23 @@ package com.volta.master.cli;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.volta.model.TestConfig;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.boot.DefaultApplicationArguments;
 
-class CliArgsParserTest {
+class ArgsParserTest {
 
   private static DefaultApplicationArguments args(String... rawArgs) {
     return new DefaultApplicationArguments(rawArgs);
+  }
+
+  private static Path writeTempFile(Path dir, String fileName, String content) throws IOException {
+    Path path = dir.resolve(fileName);
+    Files.writeString(path, content);
+    return path;
   }
 
   @Test
@@ -27,6 +37,159 @@ class CliArgsParserTest {
     assertEquals(10, config.rps());
     assertEquals(30, config.duration());
     assertEquals("http://localhost:7070", result.agentUrl());
+  }
+
+  @Test
+  void configJsonProducesCorrectMasterArgs(@TempDir Path tempDir) throws Exception {
+    Path configPath =
+        writeTempFile(
+            tempDir,
+            "config.json",
+            """
+            {
+              "url": "https://httpbin.org/get",
+              "rps": 10,
+              "duration": 30
+            }
+            """);
+
+    MasterArgs result =
+        ArgsParser.parse(args("--config=" + configPath.toString(), "--agent=localhost:7070"));
+
+    TestConfig config = result.testConfig();
+    assertEquals("https://httpbin.org/get", config.url());
+    assertEquals(10, config.rps());
+    assertEquals(30, config.duration());
+    assertEquals("http://localhost:7070", result.agentUrl());
+  }
+
+  @Test
+  void missingConfigFileThrows() {
+    assertThrows(
+        ArgsException.class,
+        () ->
+            ArgsParser.parse(
+                args("--config=./definitely-not-exists.json", "--agent=localhost:7070")));
+  }
+
+  @Test
+  void invalidJsonInConfigThrows(@TempDir Path tempDir) throws Exception {
+    Path configPath = writeTempFile(tempDir, "config.json", "{ this is not json }");
+
+    assertThrows(
+        ArgsException.class,
+        () ->
+            ArgsParser.parse(args("--config=" + configPath.toString(), "--agent=localhost:7070")));
+  }
+
+  @Test
+  void zeroRpsInConfigThrows(@TempDir Path tempDir) throws Exception {
+    Path configPath =
+        writeTempFile(
+            tempDir,
+            "config.json",
+            """
+            { "url": "https://example.com", "rps": 0, "duration": 10 }
+            """);
+
+    assertThrows(
+        ArgsException.class,
+        () ->
+            ArgsParser.parse(args("--config=" + configPath.toString(), "--agent=localhost:7070")));
+  }
+
+  @Test
+  void zeroDurationInConfigThrows(@TempDir Path tempDir) throws Exception {
+    Path configPath =
+        writeTempFile(
+            tempDir,
+            "config.json",
+            """
+            { "url": "https://example.com", "rps": 10, "duration": 0 }
+            """);
+
+    assertThrows(
+        ArgsException.class,
+        () ->
+            ArgsParser.parse(args("--config=" + configPath.toString(), "--agent=localhost:7070")));
+  }
+
+  @Test
+  void urlWithoutProtocolInConfigThrows(@TempDir Path tempDir) throws Exception {
+    Path configPath =
+        writeTempFile(
+            tempDir,
+            "config.json",
+            """
+            { "url": "example.com", "rps": 10, "duration": 10 }
+            """);
+
+    assertThrows(
+        ArgsException.class,
+        () ->
+            ArgsParser.parse(args("--config=" + configPath.toString(), "--agent=localhost:7070")));
+  }
+
+  @Test
+  void configYamlProducesCorrectMasterArgs(@TempDir Path tempDir) throws Exception {
+    Path configPath =
+        writeTempFile(
+            tempDir,
+            "config.yaml",
+            """
+            url: "https://httpbin.org/get"
+            rps: 10
+            duration: 30
+            """);
+
+    MasterArgs result =
+        ArgsParser.parse(args("--config=" + configPath.toString(), "--agent=localhost:7070"));
+
+    TestConfig config = result.testConfig();
+    assertEquals("https://httpbin.org/get", config.url());
+    assertEquals(10, config.rps());
+    assertEquals(30, config.duration());
+    assertEquals("http://localhost:7070", result.agentUrl());
+  }
+
+  @Test
+  void configYmlProducesCorrectMasterArgs(@TempDir Path tempDir) throws Exception {
+    Path configPath =
+        writeTempFile(
+            tempDir,
+            "config.yml",
+            """
+            url: "https://httpbin.org/get"
+            rps: 10
+            duration: 30
+            """);
+
+    MasterArgs result =
+        ArgsParser.parse(args("--config=" + configPath.toString(), "--agent=localhost:7070"));
+
+    TestConfig config = result.testConfig();
+    assertEquals("https://httpbin.org/get", config.url());
+    assertEquals(10, config.rps());
+    assertEquals(30, config.duration());
+    assertEquals("http://localhost:7070", result.agentUrl());
+  }
+
+  @Test
+  void unsupportedConfigExtensionThrows(@TempDir Path tempDir) throws Exception {
+    Path configPath =
+        writeTempFile(
+            tempDir,
+            "config.txt",
+            """
+            url=https://example.com
+            rps=10
+            duration=30
+            """);
+
+    assertThrows(
+        ArgsException.class,
+        () ->
+            ArgsParser.parse(args("--config=" + configPath.toString(), "--agent=localhost:7070")));
   }
 
   @Test
