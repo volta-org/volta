@@ -6,18 +6,19 @@ import com.volta.model.TestConfig;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 import org.springframework.boot.ApplicationArguments;
 
 public class ArgsParser {
 
   private static final String USAGE =
       """
-          Usage:   java -jar volta-master.jar --url=<url> --rps=<rps> --duration=<seconds> --agent=<host:port>
-                   java -jar volta-master.jar --config=./<config.json(.yaml/.yml)> --agent=<host:port>
+              Usage:   java -jar volta-master.jar --url=<url> --rps=<rps> --duration=<seconds> --agent=<host:port>
+                       java -jar volta-master.jar --config=./<config.json(.yaml/.yml)> --agent=<host:port>
 
-          Example: java -jar volta-master.jar --url=https://httpbin.org/get --rps=10 --duration=30 --agent=localhost:7070
-                   java -jar volta-master.jar --config=./config.json --agent=localhost:7070
-          """;
+              Example: java -jar volta-master.jar --url=https://httpbin.org/get --rps=10 --duration=30 --agent=localhost:7070
+                       java -jar volta-master.jar --config=./config.json --agent=localhost:7070 [--stats-out=report.jsonl|report.csv]
+              """;
 
   public static MasterArgs parse(ApplicationArguments args) {
 
@@ -71,7 +72,12 @@ public class ArgsParser {
 
     agent = "http://" + agent;
 
-    return new MasterArgs(testConfig, agent);
+    if (args.containsOption("stats-out")) {
+      String outputFile = requireString(args, "stats-out");
+      return new MasterArgs(testConfig, Optional.of(outputFile), agent);
+    }
+
+    return new MasterArgs(testConfig, Optional.empty(), agent);
   }
 
   private static String requireString(ApplicationArguments args, String name) {
