@@ -1,0 +1,5 @@
+position: 1
+label: Основная документация
+link:
+  type: generated-index
+  slug: 'docs'

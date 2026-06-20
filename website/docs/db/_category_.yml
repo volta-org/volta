@@ -1,0 +1,5 @@
+position: 4
+label: БД
+link:
+  type: generated-index
+  slug: 'db'

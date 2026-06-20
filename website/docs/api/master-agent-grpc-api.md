@@ -1,0 +1,105 @@
+---
+title: gRPC Proto API
+sidebar_position: 2
+description: Proto API для взаимдоействия Мастера и Агентов
+---
+
+Во время теста Агент каждую секунду собирает метрики и должен отправлять их Мастеру.
+
+При этом Мастер в любой момент может изменить параметры теста (RPS, число потоков) или закончить тест.
+
+То есть обе стороны обмениваются сообщениями асинхронно.
+
+## Почему выбрал gRPC
+
+1. Метрики нужны в реальном времени
+2. Агент шлет метрики постоянно
+3. Без метрик мониторинг во время теста не работает
+
+То есть требуется взаимодейсвтие близкое к синхронному по скорости.
+
+Тут лучше всего подходит gRPC стрим, причем двунаправленный (Мастер и Агент могут несколько запросов слать).
+
+Kafka, RabbitMQ, NATS: для такой простой задачи их использование -- ресурсонеэффективно. Websocket не подходит, он лучше для браузера, у нас же Java ↔ Java.
+
+## Контракт
+
+RunTest - двунапревелнный стрим. Открывается при старте теста, закрывается после завершения
+
+```protobuf
+syntax = "proto3";
+
+service AgentService {
+  rpc RunTest(stream MasterCommand) returns (stream AgentResponse);
+}
+
+message MasterCommand {
+  oneof command {
+    StartTestCommand start      = 1;
+    ChangeParamsCommand change  = 2;
+    StopTestCommand stop        = 3;
+  }
+}
+
+message StartTestCommand {
+  string test_id    = 1;
+  TestConfig config = 2;
+}
+
+message ChangeParamsCommand {
+  string test_id            = 1;
+  uint32 requests_per_sec   = 2;
+}
+
+message StopTestCommand {
+  string test_id    = 1;
+  StopReason reason = 2;
+}
+
+enum StopReason {
+  USER        = 0;
+  DURATION    = 1;
+  ERROR       = 2;
+}
+
+message TestConfig {
+  uint32 requests_per_sec   = 1;
+  uint32 duration_sec       = 2;
+  string url                = 3;
+  LoadType load_type        = 4;
+}
+
+enum LoadType {
+  SPIKE     = 0;
+  CONSTANT  = 1;
+  GRADUAL   = 2;
+}
+
+message AgentResponse {
+  oneof response {
+    TestStats   stats   = 1;
+    AgentStatus status  = 2;
+  }
+}
+
+message TestStats {
+  string test_id    = 1;
+  uint64 timestamp  = 2;
+
+  uint32 requests_per_sec = 3;
+  uint32 errors_per_sec   = 4;
+  uint32 latency_ms       = 5;
+  uint32 p50_ms           = 6;
+  uint32 p95_ms           = 7;
+  uint32 p99_ms           = 8;
+}
+
+enum AgentStatus {
+  STARTING         = 0;
+  RUNNING          = 1;
+  PARAMS_APPLIED   = 2;
+  STOPPING         = 3;
+  FINISHED         = 4;
+  ERROR            = 5;
+}
+```

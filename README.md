@@ -32,6 +32,36 @@ Agent started on port 7070
 
 ### 3. Run the Master (Terminal 2)
 
+#### Option A (recommended): run from config file
+
+Create a config file (JSON/YAML). Example `config.json`:
+
+```json
+{
+  "url": "https://httpbin.org/get",
+  "rps": 5,
+  "duration": 10
+}
+```
+
+Or `config.yaml`:
+
+```yaml
+url: "https://httpbin.org/get"
+rps: 5
+duration: 10
+```
+
+Run:
+
+```bash
+java -jar volta-master/target/volta-master-1.0-SNAPSHOT.jar \
+  --config=./config.json \
+  --agent=localhost:7070
+```
+
+#### Option B (legacy, still supported): pass parameters via CLI flags
+
 ```bash
 java -jar volta-master/target/volta-master-1.0-SNAPSHOT.jar \
   --url=https://httpbin.org/get \
