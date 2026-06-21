@@ -6,6 +6,7 @@ import com.volta.model.TestConfig;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.boot.DefaultApplicationArguments;
@@ -36,7 +37,7 @@ class ArgsParserTest {
     assertEquals("https://httpbin.org/get", config.url());
     assertEquals(10, config.rps());
     assertEquals(30, config.duration());
-    assertEquals("http://localhost:7070", result.agentUrl());
+    assertEquals("http://localhost:7070", result.agentUrls().get(0));
   }
 
   @Test
@@ -60,7 +61,21 @@ class ArgsParserTest {
     assertEquals("https://httpbin.org/get", config.url());
     assertEquals(10, config.rps());
     assertEquals(30, config.duration());
-    assertEquals("http://localhost:7070", result.agentUrl());
+    assertEquals("http://localhost:7070", result.agentUrls().get(0));
+  }
+
+  @Test
+  void multipleAgentsProduceCorrectMasterArgs() {
+    MasterArgs result =
+        ArgsParser.parse(
+            args(
+                "--url=https://httpbin.org/get",
+                "--rps=10",
+                "--duration=30",
+                "--agent=localhost:7070",
+                "--agent=localhost:7071"));
+
+    assertEquals(List.of("http://localhost:7070", "http://localhost:7071"), result.agentUrls());
   }
 
   @Test
@@ -149,7 +164,7 @@ class ArgsParserTest {
     assertEquals("https://httpbin.org/get", config.url());
     assertEquals(10, config.rps());
     assertEquals(30, config.duration());
-    assertEquals("http://localhost:7070", result.agentUrl());
+    assertEquals("http://localhost:7070", result.agentUrls().get(0));
   }
 
   @Test
@@ -171,7 +186,7 @@ class ArgsParserTest {
     assertEquals("https://httpbin.org/get", config.url());
     assertEquals(10, config.rps());
     assertEquals(30, config.duration());
-    assertEquals("http://localhost:7070", result.agentUrl());
+    assertEquals("http://localhost:7070", result.agentUrls().get(0));
   }
 
   @Test

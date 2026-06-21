@@ -15,7 +15,7 @@ public class LoadEngine {
   private final StatsCollector collector = new StatsCollector();
 
   private final String url;
-  private final int targetRps;
+  private volatile int targetRps;
   private final int durationSeconds;
   private volatile boolean running = false;
   private static final int MAX_CONCURRENT_REQUESTS = 1000;
@@ -36,9 +36,15 @@ public class LoadEngine {
     this.durationSeconds = durationSeconds;
   }
 
+  public void updateTargetRps(int newRps) {
+    if (newRps <= 0) {
+      throw new IllegalArgumentException("RPS must be positive");
+    }
+    this.targetRps = newRps;
+  }
+
   public void start() {
     running = true;
-    long intervalNanos = 1_000_000_000L / targetRps;
     long endTime;
     long sendNextTime;
 
@@ -55,6 +61,7 @@ public class LoadEngine {
       sendNextTime = System.nanoTime();
 
       while (running && System.nanoTime() < endTime) {
+        long intervalNanos = 1_000_000_000L / targetRps;
 
         long waitMillis = (sendNextTime - System.nanoTime()) / 1_000_000;
 

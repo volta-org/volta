@@ -6,6 +6,8 @@ import com.volta.model.TestConfig;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.boot.ApplicationArguments;
 
@@ -13,10 +15,11 @@ public class ArgsParser {
 
   private static final String USAGE =
       """
-              Usage:   java -jar volta-master.jar --url=<url> --rps=<rps> --duration=<seconds> --agent=<host:port>
-                       java -jar volta-master.jar --config=./<config.json(.yaml/.yml)> --agent=<host:port>
+              Usage:   java -jar volta-master.jar --url=<url> --rps=<rps> --duration=<seconds> --agent=<host:port> [--agent=<host:port> ...]
+                       java -jar volta-master.jar --config=./<config.json(.yaml/.yml)> --agent=<host:port> [--agent=<host:port> ...]
 
               Example: java -jar volta-master.jar --url=https://httpbin.org/get --rps=10 --duration=30 --agent=localhost:7070
+                       java -jar volta-master.jar --url=https://httpbin.org/get --rps=100 --duration=30 --agent=localhost:7070 --agent=localhost:7071
                        java -jar volta-master.jar --config=./config.json --agent=localhost:7070 [--stats-out=report.jsonl|report.csv]
               """;
 
@@ -67,17 +70,14 @@ public class ArgsParser {
       validateUrl(url);
       testConfig = new TestConfig(url, rps, duration);
     }
-    String agent = requireString(args, "agent");
-    validateAgent(agent);
-
-    agent = "http://" + agent;
+    List<String> agentUrls = requireAgents(args);
 
     if (args.containsOption("stats-out")) {
       String outputFile = requireString(args, "stats-out");
-      return new MasterArgs(testConfig, Optional.of(outputFile), agent);
+      return new MasterArgs(testConfig, Optional.of(outputFile), agentUrls);
     }
 
-    return new MasterArgs(testConfig, Optional.empty(), agent);
+    return new MasterArgs(testConfig, Optional.empty(), agentUrls);
   }
 
   private static String requireString(ApplicationArguments args, String name) {
@@ -112,6 +112,28 @@ public class ArgsParser {
       throw new ArgsException(
           "Argument --url must start with http:// or https://, got: " + url + "\n" + USAGE);
     }
+  }
+
+  private static List<String> requireAgents(ApplicationArguments args) {
+    if (!args.containsOption("agent")) {
+      throw new ArgsException("Missing required argument: --agent\n" + USAGE);
+    }
+
+    List<String> rawAgents = args.getOptionValues("agent");
+    if (rawAgents == null || rawAgents.isEmpty()) {
+      throw new ArgsException("Missing required argument: --agent\n" + USAGE);
+    }
+
+    List<String> agentUrls = new ArrayList<>(rawAgents.size());
+    for (String agent : rawAgents) {
+      if (agent == null || agent.isBlank()) {
+        throw new ArgsException("Argument --agent must not be blank\n" + USAGE);
+      }
+      validateAgent(agent);
+      agentUrls.add("http://" + agent);
+    }
+
+    return List.copyOf(agentUrls);
   }
 
   private static void validateAgent(String agent) {
