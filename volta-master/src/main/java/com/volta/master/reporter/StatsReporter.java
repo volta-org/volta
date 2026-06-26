@@ -3,6 +3,7 @@ package com.volta.master.reporter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.volta.master.StartupRunner;
 import com.volta.master.client.AgentClient;
+import com.volta.master.cluster.AgentCluster;
 import com.volta.stats.StatsSnapshot;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -49,17 +50,20 @@ public class StatsReporter {
   }
 
   public void startReporting(
-      String agentUrl, int durationSeconds, Optional<String> outputFilePath) {
+      AgentCluster cluster, int durationSeconds, Optional<String> outputFilePath) {
 
-    log.info("Starting live stats reporting for {}s", durationSeconds);
+    log.info(
+        "Starting live stats reporting for {}s across {} agent(s)",
+        durationSeconds,
+        cluster.allAgentUrls().size());
 
     Optional<StatsFileSink> sink = openOptionalSink(outputFilePath);
     try {
-      runLoop(agentUrl, durationSeconds, sink);
+      runLoop(cluster, durationSeconds, sink);
       try {
-        StatsSnapshot finalStats = agentClient.getStats(agentUrl);
+        StatsSnapshot finalStats = cluster.fetchStatsWithFailover(agentClient);
         writeFinalToFile(sink, finalStats);
-        printFinalStats(finalStats);
+        printFinalStats(finalStats, cluster);
       } catch (Exception e) {
         log.error("Failed to fetch final stats: {}", e.getMessage());
       }
@@ -112,7 +116,7 @@ public class StatsReporter {
     }
   }
 
-  private void runLoop(String agentUrl, int durationSeconds, Optional<StatsFileSink> sink) {
+  private void runLoop(AgentCluster cluster, int durationSeconds, Optional<StatsFileSink> sink) {
 
     for (int i = 0; i < durationSeconds; i++) {
       try {
@@ -124,7 +128,7 @@ public class StatsReporter {
       }
 
       try {
-        StatsSnapshot stats = agentClient.getStats(agentUrl);
+        StatsSnapshot stats = cluster.fetchStatsWithFailover(agentClient);
         int elapsedSeconds = i + 1;
         printLiveStats(stats, elapsedSeconds);
         writeSampleToFile(sink, stats, elapsedSeconds);
@@ -253,9 +257,15 @@ public class StatsReporter {
     System.out.println(line);
   }
 
-  private void printFinalStats(StatsSnapshot finalStats) {
+  private void printFinalStats(StatsSnapshot finalStats, AgentCluster cluster) {
 
     System.out.println("\n" + BOLD + CYAN + "========= FINAL STATS =========" + RESET);
+
+    if (cluster.hasDeadAgents()) {
+      System.out.printf(
+          "%sWARNING: incomplete data, unavailable agents: %s%s%n",
+          YELLOW, cluster.deadAgentUrls(), RESET);
+    }
 
     System.out.printf("Total Requests:  %s%s%d%s\n", BOLD, BLUE, finalStats.totalRequests(), RESET);
     System.out.printf("Success:         %s%s%d%s\n", BOLD, GREEN, finalStats.successCount(), RESET);

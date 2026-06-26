@@ -45,6 +45,30 @@ class AgentHttpServerTest {
   }
 
   @Test
+  void changeRpsReturns200WhileTestIsRunning() throws Exception {
+    String payload =
+        """
+            {"url":"http://localhost:%d/test","rps":2,"duration":10}
+            """
+            .formatted(wireMock.port());
+
+    postJson(agentBaseUrl + "/start", payload);
+    Thread.sleep(200);
+
+    HttpResponse<String> response = postJson(agentBaseUrl + "/change-rps", "{\"rps\":10}");
+
+    assertEquals(200, response.statusCode());
+    assertTrue(response.body().contains("RPS updated"));
+  }
+
+  @Test
+  void changeRpsReturns409WhenTestIsNotRunning() throws Exception {
+    HttpResponse<String> response = postJson(agentBaseUrl + "/change-rps", "{\"rps\":10}");
+
+    assertEquals(409, response.statusCode());
+  }
+
+  @Test
   void startReturns200() throws Exception {
     String payload =
         """

@@ -4,7 +4,9 @@ import com.volta.master.cli.ArgsException;
 import com.volta.master.cli.ArgsParser;
 import com.volta.master.cli.MasterArgs;
 import com.volta.master.client.AgentClient;
+import com.volta.master.cluster.AgentCluster;
 import com.volta.master.reporter.StatsReporter;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -35,16 +37,25 @@ public class StartupRunner implements ApplicationRunner {
       return;
     }
 
+    List<String> agentUrls = masterArgs.agentUrls();
+    AgentCluster cluster = AgentCluster.of(masterArgs.testConfig(), agentUrls);
+
     log.info(
-        "Starting test: url={}, rps={}, duration={}s, agent={}",
+        "Starting test: url={}, totalRps={}, duration={}s, agents={}",
         masterArgs.testConfig().url(),
         masterArgs.testConfig().rps(),
         masterArgs.testConfig().duration(),
-        masterArgs.agentUrl());
+        agentUrls);
 
-    agentClient.startTest(masterArgs.agentUrl(), masterArgs.testConfig());
+    try {
+      cluster.startCluster(agentClient);
+    } catch (IllegalStateException e) {
+      log.error(e.getMessage());
+      System.exit(1);
+      return;
+    }
 
     statsReporter.startReporting(
-        masterArgs.agentUrl(), masterArgs.testConfig().duration(), masterArgs.outputFile());
+        cluster, masterArgs.testConfig().duration(), masterArgs.outputFile());
   }
 }

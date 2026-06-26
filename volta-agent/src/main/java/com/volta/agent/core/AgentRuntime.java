@@ -49,4 +49,12 @@ public class AgentRuntime {
   public synchronized boolean isRunning() {
     return isRunning;
   }
+
+  public synchronized boolean changeRps(int rps) {
+    if (!isRunning || currentEngine == null) {
+      return false;
+    }
+    currentEngine.updateTargetRps(rps);
+    return true;
+  }
 }
