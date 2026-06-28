@@ -1,16 +1,15 @@
 package com.volta.agent.http.handler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.volta.agent.core.AgentRuntime;
 import com.volta.model.TestConfig;
+import com.volta.model.TestConfigReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 public class StartHandler implements HttpHandler {
   private final AgentRuntime runtime;
-  private final ObjectMapper objectMapper = new ObjectMapper();
 
   public StartHandler(AgentRuntime runtime) {
     this.runtime = runtime;
@@ -27,25 +26,20 @@ public class StartHandler implements HttpHandler {
 
     TestConfig config;
     try {
-      config = objectMapper.readValue(json, TestConfig.class);
+      config = TestConfigReader.readJson(json);
+    } catch (IllegalArgumentException e) {
+      sendError(exchange, 400, e.getMessage());
+      return;
     } catch (Exception e) {
-      String error = "Invalid JSON";
-      byte[] errorBytes = error.getBytes(StandardCharsets.UTF_8);
-      exchange.sendResponseHeaders(400, errorBytes.length);
-      exchange.getResponseBody().write(errorBytes);
-      exchange.close();
+      sendError(exchange, 400, "Invalid JSON");
       return;
     }
 
     boolean started;
     try {
-      started = runtime.start(config.url(), config.rps(), config.duration());
+      started = runtime.start(config);
     } catch (IllegalArgumentException e) {
-      String error = "Invalid parameters: " + e.getMessage();
-      byte[] errorBytes = error.getBytes(StandardCharsets.UTF_8);
-      exchange.sendResponseHeaders(400, errorBytes.length);
-      exchange.getResponseBody().write(errorBytes);
-      exchange.close();
+      sendError(exchange, 400, "Invalid parameters: " + e.getMessage());
       return;
     }
 
@@ -59,6 +53,14 @@ public class StartHandler implements HttpHandler {
       exchange.sendResponseHeaders(409, -1);
     }
 
+    exchange.close();
+  }
+
+  private static void sendError(HttpExchange exchange, int status, String error)
+      throws IOException {
+    byte[] errorBytes = error.getBytes(StandardCharsets.UTF_8);
+    exchange.sendResponseHeaders(status, errorBytes.length);
+    exchange.getResponseBody().write(errorBytes);
     exchange.close();
   }
 }

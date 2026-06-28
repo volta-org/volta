@@ -16,7 +16,7 @@ class LoadPlannerTest {
 
   @Test
   void splitLoadDistributesRemainderToFirstAgents() {
-    TestConfig config = new TestConfig("https://example.com", 10, 30);
+    TestConfig config = TestConfig.ofGet("https://example.com", 10, 30);
 
     List<TestConfig> split = LoadPlanner.splitLoad(config, 3);
 
@@ -25,13 +25,13 @@ class LoadPlannerTest {
     assertEquals(3, split.get(1).rps());
     assertEquals(3, split.get(2).rps());
     assertEquals(10, split.stream().mapToInt(TestConfig::rps).sum());
-    assertTrue(split.stream().allMatch(c -> c.url().equals(config.url())));
+    assertTrue(split.stream().allMatch(c -> c.request().equals(config.request())));
     assertTrue(split.stream().allMatch(c -> c.duration() == config.duration()));
   }
 
   @Test
   void splitLoadWithSingleAgentKeepsFullRps() {
-    TestConfig config = new TestConfig("https://example.com", 25, 10);
+    TestConfig config = TestConfig.ofGet("https://example.com", 25, 10);
 
     List<TestConfig> split = LoadPlanner.splitLoad(config, 1);
 
@@ -41,7 +41,7 @@ class LoadPlannerTest {
 
   @Test
   void splitLoadRejectsNonPositiveAgentCount() {
-    TestConfig config = new TestConfig("https://example.com", 10, 10);
+    TestConfig config = TestConfig.ofGet("https://example.com", 10, 10);
 
     assertThrows(IllegalArgumentException.class, () -> LoadPlanner.splitLoad(config, 0));
   }

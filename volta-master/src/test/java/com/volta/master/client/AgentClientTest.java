@@ -36,7 +36,7 @@ class AgentClientTest {
   void startTestSendsPostRequest() {
     wireMock.stubFor(post("/start").willReturn(ok()));
 
-    TestConfig config = new TestConfig("http://example.com", 10, 5);
+    TestConfig config = TestConfig.ofGet("http://example.com", 10, 5);
     agentClient.startTest(agentUrl, config);
 
     wireMock.verify(postRequestedFor(urlEqualTo("/start")));
@@ -77,9 +77,10 @@ class AgentClientTest {
 
   @Test
   void startTestSendsJsonBody() {
-    wireMock.stubFor(post("/start").withRequestBody(matchingJsonPath("$.url")).willReturn(ok()));
+    wireMock.stubFor(
+        post("/start").withRequestBody(matchingJsonPath("$.request.url")).willReturn(ok()));
 
-    TestConfig config = new TestConfig("http://example.com", 10, 5);
+    TestConfig config = TestConfig.ofGet("http://example.com", 10, 5);
     agentClient.startTest(agentUrl, config);
 
     wireMock.verify(postRequestedFor(urlEqualTo("/start")));

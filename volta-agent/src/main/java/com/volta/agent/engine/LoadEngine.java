@@ -1,6 +1,7 @@
 package com.volta.agent.engine;
 
 import com.volta.agent.http.HttpSender;
+import com.volta.model.RequestSpec;
 import com.volta.stats.StatsCollector;
 import com.volta.stats.StatsSnapshot;
 import java.net.http.HttpResponse;
@@ -14,15 +15,15 @@ public class LoadEngine {
   private static final Logger log = LoggerFactory.getLogger(LoadEngine.class);
   private final StatsCollector collector = new StatsCollector();
 
-  private final String url;
+  private final RequestSpec request;
   private volatile int targetRps;
   private final int durationSeconds;
   private volatile boolean running = false;
   private static final int MAX_CONCURRENT_REQUESTS = 1000;
 
-  public LoadEngine(String url, int targetRps, int durationSeconds) {
-    if (url == null || url.isBlank()) {
-      throw new IllegalArgumentException("URL must not be empty");
+  public LoadEngine(RequestSpec request, int targetRps, int durationSeconds) {
+    if (request == null) {
+      throw new IllegalArgumentException("Request must not be null");
     }
     if (targetRps <= 0) {
       throw new IllegalArgumentException("RPS must be positive");
@@ -31,7 +32,7 @@ public class LoadEngine {
       throw new IllegalArgumentException("Duration must be positive");
     }
 
-    this.url = url;
+    this.request = request;
     this.targetRps = targetRps;
     this.durationSeconds = durationSeconds;
   }
@@ -52,10 +53,6 @@ public class LoadEngine {
 
     try (HttpSender sender = new HttpSender();
         ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
-
-      //      warmup(sender, executor);
-      //
-      //      collector.getSnapshotAndReset();
 
       endTime = System.nanoTime() + (long) durationSeconds * 1_000_000_000L;
       sendNextTime = System.nanoTime();
@@ -85,7 +82,7 @@ public class LoadEngine {
             () -> {
               long startNano = System.nanoTime();
               try {
-                HttpResponse<String> response = sender.send(url);
+                HttpResponse<String> response = sender.send(request);
                 long latencyMs = (System.nanoTime() - startNano) / 1_000_000;
 
                 collector.record(response.statusCode(), latencyMs);
@@ -109,7 +106,6 @@ public class LoadEngine {
       log.error("Sender closed or failed to initialize", e);
     }
 
-    // try-with-resources handles executor.close() and sender.close()
     running = false;
     log.info("Test finished");
   }
@@ -124,22 +120,5 @@ public class LoadEngine {
 
   public void stop() {
     running = false;
-  }
-
-  private void warmup(HttpSender sender, ExecutorService executor) {
-    log.info("Warming up...");
-    for (int i = 0; i < 200; i++) {
-      executor.submit(
-          () -> {
-            try {
-              sender.send(url);
-            } catch (Exception ignored) {
-            }
-          });
-    }
-    try {
-      Thread.sleep(200);
-    } catch (InterruptedException ignored) {
-    }
   }
 }

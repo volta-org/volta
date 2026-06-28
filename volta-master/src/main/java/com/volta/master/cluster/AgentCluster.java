@@ -94,7 +94,8 @@ public final class AgentCluster {
     for (int i = 0; i < aliveAgents.size(); i++) {
       String agentUrl = aliveAgents.get(i);
       int agentRps = rpsValues.get(i);
-      TestConfig agentConfig = new TestConfig(testConfig.url(), agentRps, testConfig.duration());
+      TestConfig agentConfig =
+          new TestConfig(agentRps, testConfig.duration(), testConfig.request());
 
       if (agentClient.startTestSafe(agentUrl, agentConfig)) {
         assignedRps.put(agentUrl, agentRps);

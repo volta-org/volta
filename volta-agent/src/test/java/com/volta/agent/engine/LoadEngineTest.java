@@ -5,6 +5,7 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
+import com.volta.model.RequestSpec;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,7 +34,8 @@ class LoadEngineTest {
     int durationSeconds = 5;
     int expectedRequests = targetRps * durationSeconds;
 
-    LoadEngine engine = new LoadEngine(baseUrl + "/test", targetRps, durationSeconds);
+    LoadEngine engine =
+        new LoadEngine(RequestSpec.get(baseUrl + "/test"), targetRps, durationSeconds);
     engine.start();
 
     int actualRequests =
@@ -51,7 +53,7 @@ class LoadEngineTest {
   @Test
   void shouldStopAutomaticallyAfterDuration() {
     int durationSeconds = 2;
-    LoadEngine engine = new LoadEngine(baseUrl + "/test", 10, durationSeconds);
+    LoadEngine engine = new LoadEngine(RequestSpec.get(baseUrl + "/test"), 10, durationSeconds);
 
     long startTime = System.currentTimeMillis();
     engine.start();
@@ -65,7 +67,7 @@ class LoadEngineTest {
   @Test
   void shouldStopManually() throws InterruptedException {
     int durationSeconds = 60;
-    LoadEngine engine = new LoadEngine(baseUrl + "/test", 10, durationSeconds);
+    LoadEngine engine = new LoadEngine(RequestSpec.get(baseUrl + "/test"), 10, durationSeconds);
 
     Thread engineThread = new Thread(engine::start);
     engineThread.start();
@@ -80,49 +82,49 @@ class LoadEngineTest {
   @Test
   void shouldHandleServerErrors() {
     wireMock.stubFor(get("/error").willReturn(serverError()));
-    LoadEngine engine = new LoadEngine(baseUrl + "/error", 10, 2);
+    LoadEngine engine = new LoadEngine(RequestSpec.get(baseUrl + "/error"), 10, 2);
 
     assertDoesNotThrow(engine::start);
   }
 
   @Test
   void shouldHandleInvalidUrl() {
-    LoadEngine engine = new LoadEngine("http://invalid-host-that-does-not-exist:9999/test", 5, 2);
+    LoadEngine engine =
+        new LoadEngine(RequestSpec.get("http://invalid-host-that-does-not-exist:9999/test"), 5, 2);
 
     assertDoesNotThrow(engine::start);
   }
 
   @Test
-  void shouldRejectNullUrl() {
+  void shouldRejectNullRequest() {
     assertThrows(IllegalArgumentException.class, () -> new LoadEngine(null, 10, 5));
-  }
-
-  @Test
-  void shouldRejectEmptyUrl() {
-    assertThrows(IllegalArgumentException.class, () -> new LoadEngine("", 10, 5));
   }
 
   @Test
   void shouldRejectZeroRps() {
     assertThrows(
-        IllegalArgumentException.class, () -> new LoadEngine("http://localhost/test", 0, 5));
+        IllegalArgumentException.class,
+        () -> new LoadEngine(RequestSpec.get("http://localhost/test"), 0, 5));
   }
 
   @Test
   void shouldRejectNegativeRps() {
     assertThrows(
-        IllegalArgumentException.class, () -> new LoadEngine("http://localhost/test", -1, 5));
+        IllegalArgumentException.class,
+        () -> new LoadEngine(RequestSpec.get("http://localhost/test"), -1, 5));
   }
 
   @Test
   void shouldRejectZeroDuration() {
     assertThrows(
-        IllegalArgumentException.class, () -> new LoadEngine("http://localhost/test", 10, 0));
+        IllegalArgumentException.class,
+        () -> new LoadEngine(RequestSpec.get("http://localhost/test"), 10, 0));
   }
 
   @Test
   void shouldRejectNegativeDuration() {
     assertThrows(
-        IllegalArgumentException.class, () -> new LoadEngine("http://localhost/test", 10, -1));
+        IllegalArgumentException.class,
+        () -> new LoadEngine(RequestSpec.get("http://localhost/test"), 10, -1));
   }
 }
