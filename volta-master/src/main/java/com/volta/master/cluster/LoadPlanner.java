@@ -16,7 +16,7 @@ public final class LoadPlanner {
     List<Integer> rpsValues = splitRps(config.rps(), agentCount);
     List<TestConfig> configs = new ArrayList<>(agentCount);
     for (int rps : rpsValues) {
-      configs.add(new TestConfig(config.url(), rps, config.duration()));
+      configs.add(new TestConfig(rps, config.duration(), config.request()));
     }
     return configs;
   }

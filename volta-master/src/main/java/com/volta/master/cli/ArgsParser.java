@@ -1,8 +1,8 @@
 package com.volta.master.cli;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.volta.model.ScenarioValidator;
 import com.volta.model.TestConfig;
+import com.volta.model.TestConfigReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,38 +37,31 @@ public class ArgsParser {
         throw new ArgsException("Config path is not a regular file: " + configPath + "\n" + USAGE);
       }
 
-      ObjectMapper mapper;
       String name = path.getFileName().toString().toLowerCase();
-      if (name.endsWith(".json")) {
-        mapper = new ObjectMapper();
-      } else if (name.endsWith(".yaml") || name.endsWith(".yml")) {
-        mapper = new ObjectMapper(new YAMLFactory());
-      } else {
+      if (!name.endsWith(".json") && !name.endsWith(".yaml") && !name.endsWith(".yml")) {
         throw new ArgsException("Unsupported file format: " + configPath + "\n" + USAGE);
       }
 
       try {
-        testConfig = mapper.readValue(path.toFile(), TestConfig.class);
+        testConfig = TestConfigReader.read(path);
+      } catch (IllegalArgumentException e) {
+        throw new ArgsException(e.getMessage() + "\n" + USAGE);
       } catch (IOException e) {
         throw new ArgsException(
             "Failed to read/parse config: " + configPath + "\n" + e.getMessage() + "\n" + USAGE);
       }
-
-      if (testConfig.rps() <= 0) {
-        throw new ArgsException("Argument rps in config must be positive\n" + USAGE);
-      }
-      if (testConfig.duration() <= 0) {
-        throw new ArgsException("Argument duration in config must be positive\n" + USAGE);
-      }
-      validateUrl(testConfig.url());
 
     } else {
       String url = requireString(args, "url");
       int rps = requirePositiveInt(args, "rps");
       int duration = requirePositiveInt(args, "duration");
 
-      validateUrl(url);
-      testConfig = new TestConfig(url, rps, duration);
+      try {
+        testConfig = TestConfig.ofGet(url, rps, duration);
+        ScenarioValidator.validate(testConfig);
+      } catch (IllegalArgumentException e) {
+        throw new ArgsException(e.getMessage() + "\n" + USAGE);
+      }
     }
     List<String> agentUrls = requireAgents(args);
 
@@ -105,13 +98,6 @@ public class ArgsParser {
           "Argument --" + name + " must be positive, got: " + value + "\n" + USAGE);
     }
     return value;
-  }
-
-  private static void validateUrl(String url) {
-    if (!url.startsWith("http://") && !url.startsWith("https://")) {
-      throw new ArgsException(
-          "Argument --url must start with http:// or https://, got: " + url + "\n" + USAGE);
-    }
   }
 
   private static List<String> requireAgents(ApplicationArguments args) {

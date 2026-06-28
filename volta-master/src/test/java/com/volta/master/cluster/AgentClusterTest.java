@@ -21,7 +21,7 @@ class AgentClusterTest {
   @BeforeEach
   void setUp() {
     MockitoAnnotations.openMocks(this);
-    testConfig = new TestConfig("https://example.com", 100, 30);
+    testConfig = TestConfig.ofGet("https://example.com", 100, 30);
   }
 
   @Test
@@ -46,9 +46,9 @@ class AgentClusterTest {
         List.of("http://localhost:7070", "http://localhost:7072"), cluster.aliveAgentUrls());
 
     verify(agentClient)
-        .startTestSafe("http://localhost:7070", new TestConfig("https://example.com", 50, 30));
+        .startTestSafe("http://localhost:7070", TestConfig.ofGet("https://example.com", 50, 30));
     verify(agentClient)
-        .startTestSafe("http://localhost:7072", new TestConfig("https://example.com", 50, 30));
+        .startTestSafe("http://localhost:7072", TestConfig.ofGet("https://example.com", 50, 30));
     verify(agentClient, never()).startTestSafe(eq("http://localhost:7071"), any());
   }
 

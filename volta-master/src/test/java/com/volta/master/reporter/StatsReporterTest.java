@@ -36,12 +36,12 @@ class StatsReporterTest {
 
   private AgentCluster singleAgentCluster() {
     return AgentCluster.of(
-        new TestConfig("https://example.com", 10, 30), List.of("http://localhost:7070"));
+        TestConfig.ofGet("https://example.com", 10, 30), List.of("http://localhost:7070"));
   }
 
   private AgentCluster twoAgentCluster() {
     return AgentCluster.of(
-        new TestConfig("https://example.com", 100, 30),
+        TestConfig.ofGet("https://example.com", 100, 30),
         List.of("http://localhost:7070", "http://localhost:7071"));
   }
 

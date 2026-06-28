@@ -1,19 +1,20 @@
 package com.volta.agent.core;
 
 import com.volta.agent.engine.LoadEngine;
+import com.volta.model.TestConfig;
 import com.volta.stats.StatsSnapshot;
 
 public class AgentRuntime {
   private volatile boolean isRunning = false;
   private LoadEngine currentEngine = null;
 
-  public synchronized boolean start(String url, int targetRps, int durationSeconds) {
+  public synchronized boolean start(TestConfig config) {
     if (isRunning) {
       return false;
     }
 
     isRunning = true;
-    currentEngine = new LoadEngine(url, targetRps, durationSeconds);
+    currentEngine = new LoadEngine(config.request(), config.rps(), config.duration());
 
     Thread.ofPlatform()
         .start(

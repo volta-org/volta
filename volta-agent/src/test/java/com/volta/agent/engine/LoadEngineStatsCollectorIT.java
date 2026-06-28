@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.stubbing.Scenario;
+import com.volta.model.RequestSpec;
 import com.volta.stats.StatsSnapshot;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,7 +34,7 @@ public class LoadEngineStatsCollectorIT {
 
     int rps = 5;
     int duration = 2;
-    LoadEngine engine = new LoadEngine(baseUrl + "/test", rps, duration);
+    LoadEngine engine = new LoadEngine(RequestSpec.get(baseUrl + "/test"), rps, duration);
     engine.start();
 
     StatsSnapshot stats = engine.getStatsAndReset();
@@ -51,7 +52,7 @@ public class LoadEngineStatsCollectorIT {
   void serverErrorsAreRecordedAsErrors() {
     wireMock.stubFor(get("/error").willReturn(serverError()));
 
-    LoadEngine engine = new LoadEngine(baseUrl + "/error", 5, 2);
+    LoadEngine engine = new LoadEngine(RequestSpec.get(baseUrl + "/error"), 5, 2);
     engine.start();
 
     StatsSnapshot stats = engine.getStatsAndReset();
@@ -62,7 +63,8 @@ public class LoadEngineStatsCollectorIT {
 
   @Test
   void networkFailuresAreRecordedAsErrors() {
-    LoadEngine engine = new LoadEngine("http://invalid-host-that-does-not-exist:9999/test", 5, 2);
+    LoadEngine engine =
+        new LoadEngine(RequestSpec.get("http://invalid-host-that-does-not-exist:9999/test"), 5, 2);
     engine.start();
 
     StatsSnapshot stats = engine.getStatsAndReset();
@@ -86,7 +88,7 @@ public class LoadEngineStatsCollectorIT {
             .willReturn(serverError())
             .willSetStateTo(Scenario.STARTED));
 
-    LoadEngine engine = new LoadEngine(baseUrl + "/mixed", 10, 2);
+    LoadEngine engine = new LoadEngine(RequestSpec.get(baseUrl + "/mixed"), 10, 2);
     engine.start();
 
     StatsSnapshot stats = engine.getStatsAndReset();

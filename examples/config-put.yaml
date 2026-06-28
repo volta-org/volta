@@ -1,0 +1,9 @@
+rps: 5
+duration: 10
+request:
+  method: PUT
+  url: "https://httpbin.org/put"
+  headers:
+    Content-Type: application/json
+  body: |
+    {"id": 1, "status": "updated"}

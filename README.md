@@ -99,6 +99,47 @@ Max Latency:     863ms
 ===============================
 ```
 
+## Load Scenarios
+
+By default, configs with a top-level `url` send **GET** requests. For POST, PUT, PATCH, or DELETE, use a `request` block:
+
+```json
+{
+  "rps": 5,
+  "duration": 10,
+  "request": {
+    "method": "POST",
+    "url": "https://httpbin.org/post",
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": "{\"name\":\"volta\"}"
+  }
+}
+```
+
+YAML example (`examples/config-put.yaml`):
+
+```yaml
+rps: 5
+duration: 10
+request:
+  method: PUT
+  url: "https://httpbin.org/put"
+  headers:
+    Content-Type: application/json
+  body: '{"id": 1}'
+```
+
+**Supported methods:** GET, POST, PUT, PATCH, DELETE.
+
+**Validation rules:**
+- `url` is required and must start with `http://` or `https://`
+- `body` is allowed only for POST, PUT, and PATCH
+- `headers` are optional
+
+See `examples/config-post.json` and `examples/config-put.yaml` for ready-to-run samples.
+
 ## Multi-Agent Cluster
 
 Master can orchestrate several agents at once. Total RPS from the config is split evenly across available agents.
