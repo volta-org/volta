@@ -50,5 +50,5 @@ description: Методологии сбора требования
 
 **Бизнес-процесс:** Проведение нагрузочного тестирование и анализ результатов.
 
-[https://unidraw.io/app/board/a42aec93bca807ee2c7d](https://unidraw.io/app/board/a42aec93bca807ee2c7d)
+[https://unidraw.io/app/board/a42aec93bca807ee2c7d](https://unidraw.io/app/board/a42aec93bca807ee2c7d?allow_guest=true)
 
